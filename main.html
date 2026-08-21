@@ -1,0 +1,574 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#070b0d">
+  <meta name="color-scheme" content="dark">
+  <title>The Game — первая сессия</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #070b0d;
+      --panel: rgba(14, 22, 25, 0.94);
+      --panel-strong: #111b1f;
+      --text: #e7efed;
+      --muted: #8ea09d;
+      --line: rgba(116, 255, 222, 0.16);
+      --accent: #71f6d2;
+      --accent-2: #d7ff66;
+      --danger: #ff6f75;
+      --shadow: 0 18px 60px rgba(0, 0, 0, 0.5);
+    }
+
+    * { box-sizing: border-box; }
+
+    html {
+      min-height: 100%;
+      background: var(--bg);
+      -webkit-text-size-adjust: 100%;
+    }
+
+    body {
+      min-height: 100vh;
+      min-height: 100svh;
+      margin: 0;
+      overflow-x: hidden;
+      background:
+        radial-gradient(circle at 15% 0%, rgba(65, 184, 158, 0.11), transparent 34rem),
+        radial-gradient(circle at 100% 85%, rgba(215, 255, 102, 0.05), transparent 32rem),
+        linear-gradient(180deg, #090f11 0%, var(--bg) 72%);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 18px;
+      line-height: 1.62;
+    }
+
+    body::before {
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      content: "";
+      pointer-events: none;
+      opacity: 0.28;
+      background-image: linear-gradient(rgba(255,255,255,.018) 1px, transparent 1px);
+      background-size: 100% 4px;
+    }
+
+    button { font: inherit; }
+
+    .shell {
+      width: min(100%, 780px);
+      min-height: 100svh;
+      margin: 0 auto;
+      padding:
+        max(14px, env(safe-area-inset-top))
+        max(18px, env(safe-area-inset-right))
+        max(24px, env(safe-area-inset-bottom))
+        max(18px, env(safe-area-inset-left));
+    }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      display: flex;
+      min-height: 48px;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin: -14px -4px 28px;
+      padding: max(14px, env(safe-area-inset-top)) 4px 10px;
+      background: linear-gradient(180deg, rgba(7, 11, 13, .98) 55%, rgba(7, 11, 13, 0));
+    }
+
+    .brand {
+      color: var(--accent);
+      font-size: 0.73rem;
+      font-weight: 800;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+    }
+
+    .tools { display: flex; gap: 6px; }
+
+    .tool {
+      min-width: 44px;
+      min-height: 44px;
+      border: 1px solid transparent;
+      border-radius: 12px;
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+    }
+
+    .tool:hover, .tool:focus-visible {
+      border-color: var(--line);
+      color: var(--text);
+      outline: none;
+    }
+
+    .tool:disabled { visibility: hidden; }
+
+    .scene {
+      animation: appear 280ms ease-out both;
+    }
+
+    .eyebrow {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-height: 24px;
+      margin: 0 0 10px;
+      color: var(--muted);
+      font-size: 0.72rem;
+      font-weight: 750;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+
+    .eyebrow::before {
+      width: 24px;
+      height: 2px;
+      content: "";
+      background: var(--accent-2);
+      box-shadow: 0 0 12px rgba(215, 255, 102, .5);
+    }
+
+    h1 {
+      max-width: 18ch;
+      margin: 0 0 26px;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: clamp(2rem, 9vw, 3.55rem);
+      font-weight: 600;
+      letter-spacing: -0.035em;
+      line-height: 1.03;
+      text-wrap: balance;
+    }
+
+    .copy {
+      color: var(--text);
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: clamp(1.08rem, 4.8vw, 1.28rem);
+      line-height: 1.68;
+    }
+
+    .copy p { margin: 0 0 1.15em; }
+
+    .copy p:first-child::first-letter {
+      float: left;
+      margin: .09em .11em 0 0;
+      color: var(--accent);
+      font-size: 3.25em;
+      font-weight: 700;
+      line-height: .72;
+    }
+
+    .copy ul {
+      margin: 0 0 1.25em;
+      padding-left: 1.25em;
+    }
+
+    .copy li { margin: .45em 0; padding-left: .25em; }
+    .copy li::marker { color: var(--accent); }
+
+    .copy strong { color: #fff; }
+
+    .copy code {
+      padding: .12em .35em;
+      border: 1px solid var(--line);
+      border-radius: 5px;
+      background: rgba(113, 246, 210, .06);
+      color: var(--accent);
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: .78em;
+    }
+
+    .choices {
+      display: grid;
+      gap: 12px;
+      margin-top: clamp(32px, 8vh, 72px);
+      padding-top: 22px;
+      border-top: 1px solid var(--line);
+    }
+
+    .choice {
+      position: relative;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      width: 100%;
+      min-height: 66px;
+      align-items: center;
+      gap: 20px;
+      padding: 17px 18px;
+      border: 1px solid rgba(113, 246, 210, .22);
+      border-radius: 16px;
+      overflow: hidden;
+      background: linear-gradient(135deg, rgba(20, 34, 37, .97), rgba(12, 20, 23, .97));
+      box-shadow: 0 8px 24px rgba(0, 0, 0, .2);
+      color: var(--text);
+      cursor: pointer;
+      font-size: .98rem;
+      font-weight: 680;
+      line-height: 1.32;
+      text-align: left;
+      transition: border-color 160ms ease, transform 160ms ease, background 160ms ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .choice::after {
+      content: "→";
+      color: var(--accent);
+      font-size: 1.35rem;
+      font-weight: 400;
+    }
+
+    .choice:hover, .choice:focus-visible {
+      border-color: rgba(113, 246, 210, .65);
+      background: linear-gradient(135deg, rgba(26, 46, 48, .98), rgba(15, 27, 29, .98));
+      outline: none;
+      transform: translateY(-1px);
+    }
+
+    .choice:active { transform: translateY(1px) scale(.995); }
+
+    .ending {
+      margin-top: 42px;
+      padding: 22px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: var(--panel);
+      color: var(--muted);
+      text-align: center;
+    }
+
+    .error { color: var(--danger); }
+
+    @keyframes appear {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (min-width: 720px) {
+      .shell { padding-inline: 36px; }
+      .choices.multiple { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .choices.multiple .choice:last-child:nth-child(odd) { grid-column: 1 / -1; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; animation: none !important; transition: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header class="topbar" aria-label="Управление игрой">
+      <div class="brand">The Game / 01</div>
+      <div class="tools">
+        <button class="tool" id="back" type="button" title="Вернуться назад" aria-label="Вернуться назад">←</button>
+        <button class="tool" id="restart" type="button" title="Начать заново" aria-label="Начать заново">↻</button>
+      </div>
+    </header>
+    <article class="scene" id="scene" aria-live="polite"></article>
+  </main>
+
+  <script>
+    const passages = {"StoryTitle":"The Game — Session 1\n\n","StoryData":"{\n  \"ifid\": \"A1E8C5D6-774B-4C7D-945F-0BB3322BCF93\",\n  \"format\": \"SugarCube\",\n  \"format-version\": \"2.37.3\",\n  \"start\": \"Start\",\n  \"zoom\": 0.6\n}\n\n","StoryInit":"<<set $selectedCharacter = null>>\n<<set $gameHour = 8>>\n<<set $visitedFunako = false>>\n<<set $visitedBigBo = false>>\n<<set $theoConvoyHackSucceeded = null>>\n<<set $theoConvoyHackDie1 = null>>\n<<set $theoConvoyHackDie2 = null>>\n<<set $theoConvoyHackDie3 = null>>\n<<set $theoConvoyHackTotal = null>>\n<<set $shorokhKnowsTheoHasImplant = false>>\n<<set $teamKnowsTheoHasImplant = false>>\n<<set $theoSharedConvoyDataWithShorokh = null>>\n<<set $theoConvoyShareRoll = null>>\n<<set $teamKnowsConvoyData = false>>\n<<set $reLPrecinctLifeScanSucceeded = null>>\n<<set $reLPrecinctLifeScanDie1 = null>>\n<<set $reLPrecinctLifeScanDie2 = null>>\n<<set $reLPrecinctLifeScanDie3 = null>>\n<<set $reLPrecinctLifeScanTotal = null>>\n<<set $shorokhSurveillanceConnectionRoll = null>>\n<<set $shorokhTriedPrecinctSurveillanceConnection = null>>\n<<set $shorokhPrecinctSurveillanceCheckSucceeded = null>>\n<<set $shorokhPrecinctSurveillanceDie1 = null>>\n<<set $shorokhPrecinctSurveillanceDie2 = null>>\n<<set $shorokhPrecinctSurveillanceDie3 = null>>\n<<set $shorokhPrecinctSurveillanceCheckTotal = null>>\n<<set $shorokhLeftArmHp = 3>>\n<<set $shorokhAvoidedPrecinctMine = null>>\n<<set $shorokhPrecinctMineDie1 = null>>\n<<set $shorokhPrecinctMineDie2 = null>>\n<<set $shorokhPrecinctMineDie3 = null>>\n<<set $shorokhPrecinctMineCheckTotal = null>>\n<<set $precinctMineDefused = false>>\n<<set $shorokhRightLegHp = 6>>\n<<set $shorokhLeftLegHp = 6>>\n<<set $michaelFirstAidRoll = null>>\n<<set $michaelProvidedFirstAid = null>>\n<<set $michaelLearnedPrecinctBallisticsFact = null>>\n<<set $michaelPrecinctBallisticsDie1 = null>>\n<<set $michaelPrecinctBallisticsDie2 = null>>\n<<set $michaelPrecinctBallisticsDie3 = null>>\n<<set $michaelPrecinctBallisticsCheckTotal = null>>\n<<set $teamKnowsPrecinctBallisticsFact = false>>\n<<set $tahiLearnedPrecinctBallisticsFact = null>>\n<<set $tahiPrecinctBallisticsDie1 = null>>\n<<set $tahiPrecinctBallisticsDie2 = null>>\n<<set $tahiPrecinctBallisticsDie3 = null>>\n<<set $tahiPrecinctBallisticsCheckTotal = null>>\n<<set $teamKnowsTahiPrecinctBallisticsFact = false>>\n<<set $precinctResolvedOffscreen = false>>\n<<set $theoAttemptedSecretPrecinctDeparture = null>>\n<<set $theoStayedWithTeamAtPrecinct = null>>\n<<set $theoUnlockedPrecinctMotorcycle = null>>\n<<set $theoPrecinctMotorcycleDie1 = null>>\n<<set $theoPrecinctMotorcycleDie2 = null>>\n<<set $theoPrecinctMotorcycleDie3 = null>>\n<<set $theoPrecinctMotorcycleCheckTotal = null>>\n<<set $theoVisitedPsyOps = false>>\n<<set $hasDamagedPrecinctDrive = false>>\n<<set $shorokhRecognizedRepairablePrecinctDrive = null>>\n<<set $shorokhPrecinctDriveDie1 = null>>\n<<set $shorokhPrecinctDriveDie2 = null>>\n<<set $shorokhPrecinctDriveDie3 = null>>\n<<set $shorokhPrecinctDriveCheckTotal = null>>\n<<set $michaelFoundExternalCamera = null>>\n<<set $michaelCameraSearchDie1 = null>>\n<<set $michaelCameraSearchDie2 = null>>\n<<set $michaelCameraSearchDie3 = null>>\n<<set $michaelCameraSearchTotal = null>>\n<<set $michaelRetrievedExternalCamera = null>>\n<<set $michaelCameraClimbDie1 = null>>\n<<set $michaelCameraClimbDie2 = null>>\n<<set $michaelCameraClimbDie3 = null>>\n<<set $michaelCameraClimbTotal = null>>\n<<set $shorokhHasExternalCameraDrive = false>>\n<<set $externalCameraHasAttackRecording = false>>\n<<set $shorokhRememberedRobotInfo = null>>\n<<set $shorokhRobotDie1 = null>>\n<<set $shorokhRobotDie2 = null>>\n<<set $shorokhRobotDie3 = null>>\n<<set $shorokhRobotCheckTotal = null>>\n<<set $theoNeutralizedPsyOpsRobots = false>>\n<<set $sweetJohnnyRescued = false>>\n<<set $shorokhKnowsTheoVisitedPsyOps = false>>\n<<set $teamKnowsTheoVisitedPsyOps = false>>\n<<set $fullTeamCyberpsychoBattle = false>>\n<<set $knowsStadiumPlan = false>>\n<<set $teamReunitedForStadium = false>>\n\n","Start":"Даллас, вторая половина XXI века. Высотная застройка не пропускает прямой солнечный свет к нижним улицам Blue Skyport, и даже утро здесь похоже на затянувшуюся ночь.\n\nВ 08:00 пятеро полицейских заступают на смену, которая приведёт их к исчезнувшему участку, корпоративному заговору и стадиону Detroit Rangers.\n\nВыберите персонажа, за которого пройдёте эту историю:\n\n[[Шорох->S01 — 08:00. Одиннадцатый участок][$selectedCharacter = \"shorokh\"]]\n[[Майкл Маклейн->S01 — 08:00. Одиннадцатый участок][$selectedCharacter = \"michael\"]]\n[[Тахи->S01 — 08:00. Одиннадцатый участок][$selectedCharacter = \"tahi\"]]\n[[Тео Маклейн->S01 — 08:00. Одиннадцатый участок][$selectedCharacter = \"theo\"]]\n[[Рил->S01 — 08:00. Одиннадцатый участок][$selectedCharacter = \"reL\"]]\n\n","S01 — 08:00. Одиннадцатый участок":"<<set $gameHour = 8>>\nВо второй половине XXI века ночная смена уезжает, а Шорох, Майкл, Тахи, Тео и Рил заступают на дежурство в обветшавшем одиннадцатом участке района Blue Skyport в Далласе. Их встречают сержант Ричи Хартман и шеф Кристиан Дойл.\n\n//Стенограмма: 00:00–03:13.//\n\n[[Дальше →->S02 — Вводная Дойла]]\n\n","S02 — Вводная Дойла":"Дойл сообщает о ночной перестрелке патруля девятого участка с бандой Потрошителей. Трое бандитов убиты, несколько задержаны и доставлены в участок. После 03:00 девятый участок и его шеф Аарон Буч перестали отвечать.\n\nЗадание команды — во время патруля проверить девятый участок, выяснить причину нападения и сохранить спокойствие перед приездом окружного прокурора. Дойл отдельно упоминает замеченные в районе чёрные фургоны.\n\n[[Дальше →->S03 — Личные сигналы тревоги]]\n\n","S03 — Личные сигналы тревоги":"Во время вводной проявляются личные линии:\n\n* Большой Бо из прежнего племени Тахи просит приехать в отель «Парадизо» в ближайшие часы, обязательно до 11:00.\n* Тео тревожится о друге-нетраннере Сладком Джони из PsyOps: он оборвал переписку около 02:00 и пропал из сети.\n* Рил узнаёт фамилию нового шефа десятого участка Джонатана Лайта в связи с корпорацией «Крион», но не раскрывает источник знания.\n\n[[Дальше →->S04 — Расспросы Ричи]]\n\n","S04 — Расспросы Ричи":"Команда расспрашивает Ричи. Он подтверждает, что после доставки пленных в девятый участок оттуда не пришло ни одного сообщения. Записи с имплантов и камер доступны только локально.\n\nМайкл получает номер знакомого участника ночного патруля, Маркуса, но тот не отвечает. Попытки Шороха удалённо добраться до данных девятого участка и поискать Маркуса через ресурсы Arasaka результата не дают.\n\n[[Дальше →->S05 — 09:00. Выезд]]\n\n","S05 — 09:00. Выезд":"<<set $gameHour = 9>>\nКоманда садится в старую патрульную машину. Тахи ведёт, Рил занимает переднее сиденье, остальные располагаются сзади у полицейского терминала. Перед ними два срочных направления: девятый участок и отель «Парадизо», где Большой Бо ждёт Тахи. В сыгранной сессии первым направлением выбрали девятый участок.\n\n[[Направиться к девятому участку->S06 — Выбор по пути к участку]]\n[[Сразу поехать к Большому Бо->U01 — Команда встретила Большого Бо]]\n\n","S06 — Выбор по пути к участку":"На улицах непривычно мало людей и машин. Магазины и закусочные закрыты в начале рабочего дня, редкие прохожие торопятся укрыться. По пути к девятому участку команда проезжает мимо знакомой лапшичной «Фунако» и замечает нарушившую сигнал строительную фуру Red Arrow.\n\nЗа фурой следуют два полностью чёрных внедорожника. Команда вспоминает предупреждение Дойла, но может проигнорировать конвой и продолжить выбранный маршрут.\n\n[[Остановить конвой->S07 — 09:00–09:30. Конвой Lazarus]]\n[[Проигнорировать конвой и заехать в «Фунако»->S08 — «Фунако» до 10:00]]\n[[Не останавливаться и сразу ехать в участок->U02 — 09:00. Раннее прибытие в участок]]\n\n","S07 — 09:00–09:30. Конвой Lazarus":"<<set $shorokhKnowsTheoHasImplant = true>>\nПолицейские останавливают конвой. Внедорожники принадлежат частному агентству Lazarus; водитель Дмитрий Патронченко и его напарник Валерий предъявляют исправные документы. Они охраняют перевозку стройматериалов.\n\nВ кузове действительно лежат балки, сваи и арматура, но объём груза указывает на крупное укрепление, а не обычную стройку. Документы формально чисты, и конвой отпускают.\n\nПока остальные проводят досмотр, Тео тайно подключается к сети фуры. Шорох замечает скрытый нейроимплант, о котором Майкл не знает.\n\n[[Проверить результат взлома->C04 — Проверка взлома конвоя Тео]]\n\n","C04 — Проверка взлома конвоя Тео":"<<if $theoConvoyHackTotal is null>>\n<<set $theoConvoyHackDie1 = random(1, 6)>>\n<<set $theoConvoyHackDie2 = random(1, 6)>>\n<<set $theoConvoyHackDie3 = random(1, 6)>>\n<<set $theoConvoyHackTotal = $theoConvoyHackDie1 + $theoConvoyHackDie2 + $theoConvoyHackDie3 + 2>>\n<<endif>>\n\nТео проходит обычную проверку Интеллекта: `3d6 + 2` против сложности 11.\n\nКубики: **$theoConvoyHackDie1**, **$theoConvoyHackDie2**, **$theoConvoyHackDie3**. Интеллект Тео: **+2**. Итог: **$theoConvoyHackTotal**.\n\n<<if $theoConvoyHackTotal >= 11>>\n<<set $theoConvoyHackSucceeded = true>>\n[[Продолжить успешный взлом->U14 — Тео получила данные конвоя]]\n<<else>>\n<<set $theoConvoyHackSucceeded = false>>\n[[Продолжить после провала->U15 — Тео не получила данные конвоя]]\n<<endif>>\n\n","U14 — Тео получила данные конвоя":"Тео успешно взламывает сеть фуры. Она извлекает маршрут и записи: заказчик — Крион; стройматериалы развозят по периметру Blue Skyport для срочных укреплений; сегодняшние беспорядки были предусмотрены заранее; в тот же день должен быть приведён в действие некий корпоративный план. Тео сохраняет записи и карту точек разгрузки. Пока эти сведения известны только ей.\n\n//В офлайн-сессии на кубиках выпали три шестёрки. До отдельного обсуждения критических эффектов этот результат даёт те же сведения, что и любой обычный успех.//\n\n[[Решить, делиться ли данными с Шорохом->C03 — Подключение к импланту Тео]]\n\n","U15 — Тео не получила данные конвоя":"Проверка провалена. Тео не может извлечь из сети фуры маршрут, записи или карту разгрузки. Ей нечем делиться, поэтому она не подходит к Шороху и не предлагает передать информацию.\n\nСам факт существования импланта Шороху уже известен.\n\n//После провала `$theoSharedConvoyDataWithShorokh` остаётся null, а `$teamKnowsConvoyData` — false.//\n\n[[Выбрать дальнейший маршрут->S07B — Выбор после конвоя]]\n\n","C03 — Подключение к импланту Тео":"После успешного взлома Тео подходит к Шороху с добытой информацией. Шорох предлагает напрямую подключиться к её импланту, чтобы забрать записи. Сам факт существования импланта ему уже известен: Тео использовала устройство у него на глазах.\n\n<<if $selectedCharacter == \"theo\">>\nИгрок за Тео сам решает, разрешить ли подключение.\n\n[[Разрешить Шороху подключиться->U12 — Тео передала данные конвоя]]\n[[Отказать Шороху->U13 — Тео сохранила данные у себя]]\n<<else>>\n<<if $theoConvoyShareRoll is null>>\n<<set $theoConvoyShareRoll = random(1, 100)>>\n<<endif>>\nТео действует как NPC. Для этого решения применяется стандартная вероятность: 80% согласия и 20% отказа.\n\n<<if $theoConvoyShareRoll <= 80>>\n[[Узнать решение Тео->U12 — Тео передала данные конвоя]]\n<<else>>\n[[Узнать решение Тео->U13 — Тео сохранила данные у себя]]\n<<endif>>\n<<endif>>\n\n","U12 — Тео передала данные конвоя":"<<set $theoSharedConvoyDataWithShorokh = true>>\n<<set $teamKnowsConvoyData = true>>\nТео разрешает подключение. Шорох получает записи, маршрут и карту точек разгрузки, а затем передаёт сведения команде под видом результата собственного взлома. Настоящий источник данных остаётся тайной для остальных.\n\n[[Выбрать дальнейший маршрут->S07B — Выбор после конвоя]]\n\n","U13 — Тео сохранила данные у себя":"<<set $theoSharedConvoyDataWithShorokh = false>>\nТео отказывает. Шорох знает о существовании её импланта, но не получает извлечённые записи. Данные конвоя остаются личным знанием Тео и не становятся известны команде.\n\n[[Выбрать дальнейший маршрут->S07B — Выбор после конвоя]]\n\n","S07B — Выбор после конвоя":"После досмотра у команды остаётся второй получасовой отрезок. По пути к девятому участку можно остановиться у знакомой лапшичной или продолжить путь без остановок.\n\n[[Заехать в лапшичную «Фунако»->S08 — «Фунако» до 10:00]]\n[[Не заезжать — продолжить к девятому участку->S10 — 10:00. Прибытие к девятому участку]]\n\n","S08 — «Фунако» до 10:00":"<<set $visitedFunako = true>>\n<<if visited(\"S07 — 09:00–09:30. Конвой Lazarus\") > 0>>\nПосле досмотра команда заезжает в лапшичную «Фунако» на вторые полчаса периода.\n<<else>>\nКоманда не вмешивается в движение конвоя и заезжает в лапшичную «Фунако». Посещение занимает одно получасовое событие; второго события команда не встречает, поэтому оставшееся время автоматически проматывается до 10:00.\n<<endif>>\n\nВ почти пустом квартале работает одна «Фунако». Пожилой хозяин предупреждает: несколько дней ходят слухи, что сегодня лучше не выходить; в районе появилось оружие, полиция уже столкнулась с бандитами, а разные банды будто готовят общее дело. Сам он надеется лишь пережить день и советует после 18:00 запереться дома.\n\n<<if visited(\"S07 — 09:00–09:30. Конвой Lazarus\") > 0>>\n<<if $theoConvoyHackSucceeded>>\n<<if $theoSharedConvoyDataWithShorokh>>\nТео и Шорох сохраняют в тайне уже состоявшуюся прямую передачу данных через её имплант.\n<<else>>\nДанные, добытые Тео при взломе конвоя, остаются только у неё.\n<<endif>>\n<<else>>\nТео не смогла извлечь данные из сети конвоя и не обсуждает со Шорохом их передачу.\n<<endif>>\n<<endif>>\n\n[[Продолжить к девятому участку →->S10 — 10:00. Прибытие к девятому участку]]\n[[Поехать к Большому Бо->U01 — Команда встретила Большого Бо][$gameHour = 10]]\n\n","U01 — Команда встретила Большого Бо":"<<set $visitedBigBo = true>>\n<<set $knowsStadiumPlan = true>>\nКоманда встретила Большого Бо. Во время встречи он сообщает, что в 12:00 на стадионе Detroit Rangers готовится нечто важное.\n\n//Заглушка несыгранной ветки. Подробное описание сцены, диалоги, последствия и дальнейшие переходы будут добавлены позднее.//\n\n[[Продолжить утренние события к точке синхронизации->SYNC01 — Сбор команды перед стадионом]]\n\n","U02 — 09:00. Раннее прибытие в участок":"Команда игнорирует конвой, не заезжает в «Фунако» и без задержек прибывает в девятый участок к 09:00.\n\nДальше происходят те же события, что и при прибытии в 10:00: команда исследует участок, а Тео уезжает в офис PsyOps.\n\n[[Начать осмотр участка->S11 — Девятый участок снаружи]]\n\n","S10 — 10:00. Прибытие к девятому участку":"<<set $gameHour = 10>>\nРовно в 10:00 команда прибывает к девятому участку после одного или двух выбранных по пути событий.\n\n<<if $teamKnowsConvoyData and $visitedFunako>>\nЧтобы не раскрывать секрет Тео, Шорох выдаёт полученные от неё записи фуры за результат собственного взлома. Команда сопоставляет ночные беспорядки, срочные укрепления, маршрут конвоя и предупреждение хозяина «Фунако».\n<<elseif $teamKnowsConvoyData>>\nЧтобы не раскрывать секрет Тео, Шорох выдаёт полученные от неё записи фуры за результат собственного взлома. Команда сопоставляет ночные беспорядки, срочные укрепления и маршрут конвоя; предупреждения хозяина «Фунако» у них нет.\n<<elseif $theoConvoyHackSucceeded>>\nШорох знает о скрытом импланте Тео, но она отказалась передать ему записи. Команда помнит только формально законные документы Lazarus и подозрительный объём стройматериалов. Заказчик «Крион», карта укреплений, заранее спланированные беспорядки и корпоративный план остаются личным знанием Тео.\n<<elseif visited(\"S07 — 09:00–09:30. Конвой Lazarus\") > 0>>\nШорох знает о скрытом импланте Тео, но её взлом конвоя провалился. Команда помнит только формально законные документы Lazarus и подозрительный объём стройматериалов; скрытых записей у неё нет.\n<<else>>\nКоманда не останавливает конвой и потому не получает сведения о Крион, укреплениях и заранее спланированных беспорядках. После посещения «Фунако» у неё остаётся только предупреждение хозяина лапшичной.\n<<endif>>\n\n<<if visited(\"S07 — 09:00–09:30. Конвой Lazarus\") > 0>>\nТахи докладывает Дойлу, а Шорох пересылает аудиофрагмент как доказательство. Дойл приказывает немедленно проверить участок, не ввязываясь в бой.\n<<else>>\nКоманда продолжает выполнение приказа Дойла и готовится проверить участок.\n<<endif>>\n\n[[Дальше →->S11 — Девятый участок снаружи]]\n\n","S11 — Девятый участок снаружи":"У девятого участка стоят пустые патрульные машины. Окно разбито, дверь закрыта, внутри темно. Рил пытается просканировать здание и определить, остался ли внутри кто-нибудь живой.\n\nУ стены участка находится трансформаторная будка, через которую Шорох может попытаться подключиться к внутренней системе видеонаблюдения.\n\n<<if $selectedCharacter is \"theo\">>\nПеред входом Тео должна решить, остаться ли с командой или попытаться незаметно ускользнуть к пропавшему другу из PsyOps.\n\n[[Принять решение за Тео->C17 — Решение Тео перед входом в участок]]\n<<elseif $selectedCharacter is \"shorokh\">>\n<<set $theoAttemptedSecretPrecinctDeparture = true>>\n<<set $theoStayedWithTeamAtPrecinct = false>>\n<<set $theoUnlockedPrecinctMotorcycle = true>>\n<<set $theoVisitedPsyOps = true>>\nПока команда готовится войти, Тео сообщает, что отойдёт ради связи, незаметно ускользает и без дополнительных проверок уезжает на найденном мотоцикле. В этот момент Шорох ещё не знает, куда она направилась.\n\n[[Провести сканирование Рил->C12 — Сканирование девятого участка Рил]]\n<<else>>\n<<set $theoAttemptedSecretPrecinctDeparture = false>>\n<<set $theoStayedWithTeamAtPrecinct = true>>\n<<set $theoUnlockedPrecinctMotorcycle = null>>\n<<set $theoVisitedPsyOps = false>>\nТео остаётся с командой и входит в участок. Поскольку выбран Майкл, Тахи или Рил, NPC-Тео не получает собственной роли в осмотре и пассивно наблюдает за действиями остальных.\n\n[[Провести сканирование Рил->C12 — Сканирование девятого участка Рил]]\n<<endif>>\n\n","C17 — Решение Тео перед входом в участок":"Тео может войти в участок вместе со всеми или попытаться незаметно покинуть команду. Если она останется, собственной активной роли в осмотре у неё не будет: Тео будет наблюдать за действиями остальных.\n\n[[Посетить участок вместе с командой->C12 — Сканирование девятого участка Рил][$theoAttemptedSecretPrecinctDeparture = false; $theoStayedWithTeamAtPrecinct = true]]\n[[Незаметно ускользнуть->C18 — Разблокировка мотоцикла Тео][$theoAttemptedSecretPrecinctDeparture = true]]\n\n","C18 — Разблокировка мотоцикла Тео":"<<if $theoPrecinctMotorcycleCheckTotal is null>>\n<<set $theoPrecinctMotorcycleDie1 = random(1, 6)>>\n<<set $theoPrecinctMotorcycleDie2 = random(1, 6)>>\n<<set $theoPrecinctMotorcycleDie3 = random(1, 6)>>\n<<set $theoPrecinctMotorcycleCheckTotal = $theoPrecinctMotorcycleDie1 + $theoPrecinctMotorcycleDie2 + $theoPrecinctMotorcycleDie3 + 2>>\n<<endif>>\n\nЗа углом Тео находит мотоцикл с умной панелью управления и пытается подобрать пароль. В транскрипте ведущий назначает проверку Интеллекта: `3d6 + Интеллект Тео 2` против сложности 11.\n\nКубики: **$theoPrecinctMotorcycleDie1**, **$theoPrecinctMotorcycleDie2**, **$theoPrecinctMotorcycleDie3**. Интеллект Тео: **+2**. Итог: **$theoPrecinctMotorcycleCheckTotal**.\n\n<<if $theoPrecinctMotorcycleCheckTotal >= 11>>\n[[Завести мотоцикл и уехать->U39 — Тео уехала в PsyOps]]\n<<else>>\n[[Вернуться к команде->U40 — Тео не смогла разблокировать мотоцикл]]\n<<endif>>\n\n","U39 — Тео уехала в PsyOps":"<<set $theoUnlockedPrecinctMotorcycle = true>>\n<<set $theoStayedWithTeamAtPrecinct = false>>\n<<set $theoVisitedPsyOps = true>>\nТео подбирает пароль, разблокирует мотоцикл и незаметно уезжает в офис PsyOps. Остальная команда продолжает осмотр участка без неё.\n\n[[Добраться до офиса PsyOps->S15 — Тео проникает в PsyOps]]\n\n","U40 — Тео не смогла разблокировать мотоцикл":"<<set $theoUnlockedPrecinctMotorcycle = false>>\n<<set $theoStayedWithTeamAtPrecinct = true>>\nТео не успевает подобрать пароль к умной панели мотоцикла. Она отказывается от попытки уехать и возвращается к команде в участок, где пассивно наблюдает за действиями остальных.\n\n[[Вернуться к осмотру участка->C12 — Сканирование девятого участка Рил]]\n\n","C12 — Сканирование девятого участка Рил":"<<if $reLPrecinctLifeScanTotal is null>>\n<<set $reLPrecinctLifeScanDie1 = random(1, 6)>>\n<<set $reLPrecinctLifeScanDie2 = random(1, 6)>>\n<<set $reLPrecinctLifeScanDie3 = random(1, 6)>>\n<<set $reLPrecinctLifeScanTotal = $reLPrecinctLifeScanDie1 + $reLPrecinctLifeScanDie2 + $reLPrecinctLifeScanDie3 + 2>>\n<<endif>>\n\nРил проходит активную проверку Воли: `3d6 + 2` против сложности 11.\n\nКубики: **$reLPrecinctLifeScanDie1**, **$reLPrecinctLifeScanDie2**, **$reLPrecinctLifeScanDie3**. Воля Рил: **+2**. Итог: **$reLPrecinctLifeScanTotal**.\n\n<<if $reLPrecinctLifeScanTotal >= 11>>\n[[Сообщить результат сканирования->U29 — Рил не обнаружила живых]]\n<<else>>\n[[Продолжить после неудачного сканирования->U30 — Рил не смогла определить состояние людей]]\n<<endif>>\n\n","U29 — Рил не обнаружила живых":"<<set $reLPrecinctLifeScanSucceeded = true>>\nРил успешно сканирует участок. Внутри видны тела, но признаков жизни нет. Она сообщает команде, что живых людей в здании не обнаружила.\n\n[[Решить, будет ли Шорох подключаться->C10 — Решение о подключении к системе наблюдения]]\n\n","U30 — Рил не смогла определить состояние людей":"<<set $reLPrecinctLifeScanSucceeded = false>>\nПомехи, стены и повреждения здания мешают Рил получить надёжные данные. Она видит неподвижные силуэты, но не может определить, остался ли внутри кто-нибудь живой.\n\nКоманда продолжает проверку участка без подтверждения состояния находящихся внутри людей.\n\n[[Решить, будет ли Шорох подключаться->C10 — Решение о подключении к системе наблюдения]]\n\n","C10 — Решение о подключении к системе наблюдения":"<<if $selectedCharacter is \"shorokh\">>\nШорох — выбранный персонаж. Решение принимает игрок.\n\n[[Подключиться к системе видеонаблюдения->C11 — Подключение Шороха к системе наблюдения]]\n[[Не рисковать и сразу войти в участок->U28 — Шорох отказался от подключения]]\n<<else>>\n<<if $shorokhSurveillanceConnectionRoll is null>>\n<<set $shorokhSurveillanceConnectionRoll = random(1, 100)>>\n<<endif>>\nШорох действует как NPC. Для решения применяется пассивная проверка: 80% — подключиться к системе, 20% — отказаться.\n\n<<if $shorokhSurveillanceConnectionRoll <= 80>>\n[[Узнать решение Шороха->C11 — Подключение Шороха к системе наблюдения]]\n<<else>>\n[[Узнать решение Шороха->U28 — Шорох отказался от подключения]]\n<<endif>>\n<<endif>>\n\n","C11 — Подключение Шороха к системе наблюдения":"<<set $shorokhTriedPrecinctSurveillanceConnection = true>>\n<<if $shorokhPrecinctSurveillanceCheckTotal is null>>\n<<set $shorokhPrecinctSurveillanceDie1 = random(1, 6)>>\n<<set $shorokhPrecinctSurveillanceDie2 = random(1, 6)>>\n<<set $shorokhPrecinctSurveillanceDie3 = random(1, 6)>>\n<<set $shorokhPrecinctSurveillanceCheckTotal = $shorokhPrecinctSurveillanceDie1 + $shorokhPrecinctSurveillanceDie2 + $shorokhPrecinctSurveillanceDie3 + 3>>\n<<endif>>\n\nВ транскрипте для подключения используется Интеллект. Шорох проходит обычную проверку: `3d6 + Интеллект 3` против сложности 11.\n\nКубики: **$shorokhPrecinctSurveillanceDie1**, **$shorokhPrecinctSurveillanceDie2**, **$shorokhPrecinctSurveillanceDie3**. Интеллект Шороха: **+3**. Итог: **$shorokhPrecinctSurveillanceCheckTotal**.\n\n<<if $shorokhPrecinctSurveillanceCheckTotal >= 11>>\n[[Завершить безопасное подключение->U26 — Безопасное подключение к системе наблюдения]]\n<<else>>\n[[Продолжить после повреждения руки->U27 — Подключение повредило киберруку]]\n<<endif>>\n\n","U26 — Безопасное подключение к системе наблюдения":"<<set $shorokhPrecinctSurveillanceCheckSucceeded = true>>\nШорох вскрывает трансформаторную будку, подключается к внутренней сети через левую киберруку и убеждается, что система видеонаблюдения повреждена. Получить запись или изображение с камер не удаётся.\n\n[[Войти в участок->S12 — Мина у входа]]\n\n","U27 — Подключение повредило киберруку":"<<set $shorokhPrecinctSurveillanceCheckSucceeded = false>>\n<<set $shorokhLeftArmHp = Math.max(0, $shorokhLeftArmHp - 1)>>\nВо время подключения повреждённая сеть бьёт по интерфейсам левой киберруки Шороха и наносит ей 1 урон. Левая рука: **$shorokhLeftArmHp из 3 HP**.\n\nНесмотря на повреждение, Шорох завершает подключение и убеждается, что система видеонаблюдения выведена из строя. Получить запись или изображение с камер не удаётся.\n\n[[Войти в участок->S12 — Мина у входа]]\n\n","U28 — Шорох отказался от подключения":"<<set $shorokhTriedPrecinctSurveillanceConnection = false>>\nШорох решает не подключаться к повреждённой системе и не получает раннее подтверждение её состояния. Левая киберрука остаётся неповреждённой.\n\n[[Сразу войти в участок->S12 — Мина у входа]]\n\n","S12 — Мина у входа":"Шорох первым входит в участок. У самого входа его ждёт мина со скрытым лазерным лучом.\n\n[[Проверить, успеет ли Шорох переступить луч->C08 — Проверка мины у входа]]\n\n","C08 — Проверка мины у входа":"<<if $shorokhPrecinctMineCheckTotal is null>>\n<<set $shorokhPrecinctMineDie1 = random(1, 6)>>\n<<set $shorokhPrecinctMineDie2 = random(1, 6)>>\n<<set $shorokhPrecinctMineDie3 = random(1, 6)>>\n<<set $shorokhPrecinctMineCheckTotal = $shorokhPrecinctMineDie1 + $shorokhPrecinctMineDie2 + $shorokhPrecinctMineDie3 + 1>>\n<<endif>>\n\nШорох проходит обычную проверку Атлетики: `3d6 + 1` против сложности 11.\n\nКубики: **$shorokhPrecinctMineDie1**, **$shorokhPrecinctMineDie2**, **$shorokhPrecinctMineDie3**. Атлетика Шороха: **+1**. Итог: **$shorokhPrecinctMineCheckTotal**.\n\n<<if $shorokhPrecinctMineCheckTotal >= 11>>\n<<set $shorokhAvoidedPrecinctMine = true>>\n[[Открыть подквест обезвреживания->U23 — Мина обезврежена]]\n<<else>>\n<<set $shorokhAvoidedPrecinctMine = false>>\n[[Продолжить после взрыва->U22 — Мина сработала]]\n<<endif>>\n\n","U22 — Мина сработала":"<<set $shorokhRightLegHp = Math.max(0, $shorokhRightLegHp - 2)>>\n<<set $shorokhLeftLegHp = Math.max(0, $shorokhLeftLegHp - 2)>>\nШорох не успевает переступить скрытый лазерный луч. Мина срабатывает, как в сыгранной сессии: взрыв отбрасывает Шороха к стене и ранит обе ноги, но повреждения оказываются не смертельными.\n\nВзрыв наносит по 2 урона каждой ноге. Правая нога: **$shorokhRightLegHp из 6 HP**. Левая нога: **$shorokhLeftLegHp из 6 HP**.\n\nДо стадиона уменьшенные HP сохраняются, но не изменяют доступные действия и проверки. В последующих квестах дальнейший урон может привести к травме, невозможности сражаться или необходимости перемещаться с помощью коллег.\n\nПодмога не приходит: Ричи не может никого прислать, а десятый участок заявляет, что все его машины заняты.\n\n[[Решить, окажет ли Майкл первую помощь->C09 — Решение Майкла о первой помощи]]\n\n","C09 — Решение Майкла о первой помощи":"Майкл добирается до аптечки и может оказать Шороху первую помощь.\n\n<<if $selectedCharacter is \"michael\">>\nМайкл — выбранный персонаж. Решение принимает игрок.\n\n[[Оказать Шороху первую помощь->U24 — Майкл оказал первую помощь]]\n[[Оставить состояние Шороха без изменений->U25 — Майкл не оказал первую помощь]]\n<<else>>\n<<if $michaelFirstAidRoll is null>>\n<<set $michaelFirstAidRoll = random(1, 100)>>\n<<endif>>\nМайкл действует как NPC. Для решения применяется пассивная проверка: 80% — оказать помощь, 20% — оставить состояние Шороха без изменений.\n\n<<if $michaelFirstAidRoll <= 80>>\n[[Узнать решение Майкла->U24 — Майкл оказал первую помощь]]\n<<else>>\n[[Узнать решение Майкла->U25 — Майкл не оказал первую помощь]]\n<<endif>>\n<<endif>>\n\n","U24 — Майкл оказал первую помощь":"<<set $michaelProvidedFirstAid = true>>\n<<set $shorokhRightLegHp = Math.min(6, $shorokhRightLegHp + 1)>>\n<<set $shorokhLeftLegHp = Math.min(6, $shorokhLeftLegHp + 1)>>\nМайкл осматривает ранения и оказывает Шороху первую помощь. Обе ноги восстанавливают по 1 HP.\n\nПравая нога: **$shorokhRightLegHp из 6 HP**. Левая нога: **$shorokhLeftLegHp из 6 HP**.\n\n[[Продолжить осмотр участка->S13 — Расстрел в девятом участке]]\n\n","U25 — Майкл не оказал первую помощь":"<<set $michaelProvidedFirstAid = false>>\nМайкл не оказывает первую помощь. HP обеих ног Шороха остаётся без изменений: **$shorokhRightLegHp из 6** у правой и **$shorokhLeftLegHp из 6** у левой.\n\n[[Продолжить осмотр участка->S13 — Расстрел в девятом участке]]\n\n","U23 — Мина обезврежена":"<<set $precinctMineDefused = true>>\nШорох вовремя замечает опасность и переступает скрытый лазерный луч. Это открывает отдельный подквест, в котором другой герой обезвреживает мину.\n\n''Мина обезврежена.''\n\n//Заглушка: персонаж, который обезвреживает мину, его действия и детали подквеста будут определены позднее.//\n\n[[Продолжить осмотр участка->S13 — Расстрел в девятом участке]]\n\n","S13 — Расстрел в девятом участке":"Внутри находят расстрелянных полицейских, пленных Потрошителей и шефа Аарона Буча. Рил определяет общее время смерти — около 03:00. Выстрелы точные, с контрольными попаданиями; даже без отдельной проверки команда понимает, что действовали опытные солдаты. Арсенал не ограблен, внутренние камеры уничтожены.\n\nДополнительное исследование места убийства выполняет только выбранный игроком персонаж. NPC не делают проверок этой сцены.\n\n<<if $selectedCharacter is \"michael\">>\n[[Исследовать гильзы Майклом->C13 — Проверка гильз Майклом]]\n<<elseif $selectedCharacter is \"tahi\">>\n[[Исследовать следы стрельбы Тахи->C15 — Проверка следов стрельбы Тахи]]\n<<else>>\n[[Продолжить осмотр участка->C07 — Проверка диска внутренних камер]]\n<<endif>>\n\n","C13 — Проверка гильз Майклом":"<<if $michaelPrecinctBallisticsCheckTotal is null>>\n<<set $michaelPrecinctBallisticsDie1 = random(1, 6)>>\n<<set $michaelPrecinctBallisticsDie2 = random(1, 6)>>\n<<set $michaelPrecinctBallisticsDie3 = random(1, 6)>>\n<<set $michaelPrecinctBallisticsCheckTotal = $michaelPrecinctBallisticsDie1 + $michaelPrecinctBallisticsDie2 + $michaelPrecinctBallisticsDie3 + 1 + 1>>\n<<endif>>\n\nМайкл проходит проверку Интеллекта с ситуационным бонусом за военный опыт: `3d6 + Интеллект 1 + 1` против сложности 11.\n\nКубики: **$michaelPrecinctBallisticsDie1**, **$michaelPrecinctBallisticsDie2**, **$michaelPrecinctBallisticsDie3**. Интеллект Майкла: **+1**. Ситуационный бонус: **+1**. Итог: **$michaelPrecinctBallisticsCheckTotal**.\n\n<<if $michaelPrecinctBallisticsCheckTotal >= 11>>\n[[Изучить найденную улику->U31 — Майкл обнаружил дополнительный факт]]\n<<else>>\n[[Продолжить после неудачного поиска->U32 — Майкл не определил оружие]]\n<<endif>>\n\n","U31 — Майкл обнаружил дополнительный факт":"<<set $michaelLearnedPrecinctBallisticsFact = true>>\nПроверка успешна. Среди следов стрельбы Майкл обнаруживает дополнительный факт, который в будущем сможет помочь команде.\n\n//Заглушка: содержание факта и его конкретное влияние на последующие проверки или ветки будут определены позднее.//\n\n[[Решить, сообщит ли Майкл найденный факт->C14 — Раскрытие баллистического факта]]\n\n","C14 — Раскрытие баллистического факта":"Майкл — выбранный персонаж. Игрок решает, передавать ли необязательный факт присутствующей команде.\n\n[[Рассказать команде о находке->U33 — Майкл раскрыл баллистический факт]]\n[[Скрыть найденный факт->U34 — Майкл сохранил баллистический факт в тайне]]\n\n","U33 — Майкл раскрыл баллистический факт":"<<set $teamKnowsPrecinctBallisticsFact = true>>\nМайкл сообщает найденный факт присутствующим. Сведения становятся командным знанием и смогут помочь группе в будущей сцене.\n\n//Содержание факта и его конкретное применение будут добавлены позднее.//\n\n[[Осмотреть уничтоженное оборудование->C07 — Проверка диска внутренних камер]]\n\n","U34 — Майкл сохранил баллистический факт в тайне":"<<set $teamKnowsPrecinctBallisticsFact = false>>\nМайкл решает не рассказывать о находке. Факт остаётся его личным знанием и пока не может помочь всей команде.\n\n[[Осмотреть уничтоженное оборудование->C07 — Проверка диска внутренних камер]]\n\n","U32 — Майкл не определил оружие":"<<set $michaelLearnedPrecinctBallisticsFact = false>>\nПроверка провалена. Майкл не находит пригодных для анализа гильз и не может определить использованное оружие. Возможно, нападавшие тщательно подчистили следы.\n\nКоманда по-прежнему видит профессиональный характер нападения по точным попаданиям и контрольным выстрелам, но дополнительного факта не получает.\n\n[[Осмотреть уничтоженное оборудование->C07 — Проверка диска внутренних камер]]\n\n","C15 — Проверка следов стрельбы Тахи":"<<if $tahiPrecinctBallisticsCheckTotal is null>>\n<<set $tahiPrecinctBallisticsDie1 = random(1, 6)>>\n<<set $tahiPrecinctBallisticsDie2 = random(1, 6)>>\n<<set $tahiPrecinctBallisticsDie3 = random(1, 6)>>\n<<set $tahiPrecinctBallisticsCheckTotal = $tahiPrecinctBallisticsDie1 + $tahiPrecinctBallisticsDie2 + $tahiPrecinctBallisticsDie3 + 1 + 1>>\n<<endif>>\n\nТахи как выбранный персонаж самостоятельно изучает место стрельбы. Его проверка не зависит от результата Майкла и использует бонус за военный и оружейный опыт: `3d6 + Интеллект 1 + 1` против сложности 11.\n\nКубики: **$tahiPrecinctBallisticsDie1**, **$tahiPrecinctBallisticsDie2**, **$tahiPrecinctBallisticsDie3**. Интеллект Тахи: **+1**. Ситуационный бонус: **+1**. Итог: **$tahiPrecinctBallisticsCheckTotal**.\n\n<<if $tahiPrecinctBallisticsCheckTotal >= 11>>\n[[Изучить находку Тахи->U35 — Тахи обнаружил отдельный факт]]\n<<else>>\n[[Продолжить после неудачного осмотра->U36 — Тахи не обнаружил дополнительный факт]]\n<<endif>>\n\n","U35 — Тахи обнаружил отдельный факт":"<<set $tahiLearnedPrecinctBallisticsFact = true>>\nПроверка успешна. Тахи обнаруживает собственный факт о месте стрельбы. Этот факт отличается от того, который Майкл мог бы найти в своём прохождении, и сможет отдельно помочь в будущем.\n\n//Заглушка: содержание факта Тахи и его конкретное влияние будут определены позднее.//\n\n[[Решить, сообщит ли Тахи найденный факт->C16 — Раскрытие факта Тахи]]\n\n","U36 — Тахи не обнаружил дополнительный факт":"<<set $tahiLearnedPrecinctBallisticsFact = false>>\nТахи не находит дополнительной улики. Команда сохраняет только общий вывод о профессионализме нападавших.\n\n[[Осмотреть уничтоженное оборудование->C07 — Проверка диска внутренних камер]]\n\n","C16 — Раскрытие факта Тахи":"Тахи — выбранный персонаж. Игрок решает, передавать ли необязательный факт присутствующей команде.\n\n[[Рассказать команде о находке->U37 — Тахи раскрыл найденный факт]]\n[[Скрыть найденный факт->U38 — Тахи сохранил найденный факт в тайне]]\n\n","U37 — Тахи раскрыл найденный факт":"<<set $teamKnowsTahiPrecinctBallisticsFact = true>>\nТахи сообщает свой факт присутствующим. Он становится командным знанием и сможет отдельно помочь группе в будущем.\n\n//Содержание факта и его конкретное применение будут добавлены позднее.//\n\n[[Осмотреть уничтоженное оборудование->C07 — Проверка диска внутренних камер]]\n\n","U38 — Тахи сохранил найденный факт в тайне":"<<set $teamKnowsTahiPrecinctBallisticsFact = false>>\nТахи решает не рассказывать о находке. Факт остаётся его личным знанием и пока не помогает всей команде.\n\n[[Осмотреть уничтоженное оборудование->C07 — Проверка диска внутренних камер]]\n\n","C07 — Проверка диска внутренних камер":"Шорох находит среди уничтоженного оборудования повреждённый диск системы наблюдения и пытается понять, можно ли его восстановить.\n\n<<if $shorokhPrecinctDriveCheckTotal is null>>\n<<set $shorokhPrecinctDriveDie1 = random(1, 6)>>\n<<set $shorokhPrecinctDriveDie2 = random(1, 6)>>\n<<set $shorokhPrecinctDriveDie3 = random(1, 6)>>\n<<set $shorokhPrecinctDriveCheckTotal = $shorokhPrecinctDriveDie1 + $shorokhPrecinctDriveDie2 + $shorokhPrecinctDriveDie3 + 3>>\n<<endif>>\n\nШорох проходит обычную проверку Интеллекта: `3d6 + 3` против сложности 11.\n\nКубики: **$shorokhPrecinctDriveDie1**, **$shorokhPrecinctDriveDie2**, **$shorokhPrecinctDriveDie3**. Интеллект Шороха: **+3**. Итог: **$shorokhPrecinctDriveCheckTotal**.\n\n<<if $shorokhPrecinctDriveCheckTotal >= 11>>\n<<set $shorokhRecognizedRepairablePrecinctDrive = true>>\n[[Забрать потенциально восстановимый диск->U20 — Шорох сохранил повреждённый диск]]\n<<else>>\n<<set $shorokhRecognizedRepairablePrecinctDrive = false>>\n[[Оставить диск в участке->U21 — Шорох забраковал повреждённый диск]]\n<<endif>>\n\n","U20 — Шорох сохранил повреждённый диск":"<<set $hasDamagedPrecinctDrive = true>>\nПроверка успешна. Шорох понимает, что диск повреждён, но потенциально подлежит восстановлению, извлекает его из системы и забирает с собой. До стадиона команда его не ремонтирует и не получает с него данные.\n\n[[Продолжить осмотр участка->S14 — Камера с восьмичасовым циклом]]\n\n","U21 — Шорох забраковал повреждённый диск":"Проверка провалена. Шорох не понимает, как можно починить повреждённый диск, считает его не подлежащим восстановлению и оставляет в девятом участке. Будущая линия ремонта для этого прохождения закрыта.\n\n//`$hasDamagedPrecinctDrive` остаётся false.//\n\n[[Продолжить осмотр участка->S14 — Камера с восьмичасовым циклом]]\n\n","S14 — Камера с восьмичасовым циклом":"Майкл предлагает поискать снаружи камеру, в поле зрения которой мог попасть вход в девятый участок.\n\n<<if $gameHour >= 11>>\nЕсли камера найдётся, запись нападения около 03:00 уже будет стёрта новой циклической записью: восьмичасовой буфер успел перезаписаться к началу периода 11:00–12:00.\n<<endif>>\n\n[[Проверить, заметил ли Майкл камеру->C05 — Поиск внешней камеры]]\n\n","C05 — Поиск внешней камеры":"<<if $michaelCameraSearchTotal is null>>\n<<set $michaelCameraSearchDie1 = random(1, 6)>>\n<<set $michaelCameraSearchDie2 = random(1, 6)>>\n<<set $michaelCameraSearchDie3 = random(1, 6)>>\n<<set $michaelCameraSearchTotal = $michaelCameraSearchDie1 + $michaelCameraSearchDie2 + $michaelCameraSearchDie3 + 1 + 1>>\n<<endif>>\n\nМайкл проходит проверку Интеллекта по обычным правилам. Его Интеллект равен 1; как в офлайн-сессии, он получает ситуационный бонус +1 за хорошую заявку. Порог успеха — 11.\n\nКубики: **$michaelCameraSearchDie1**, **$michaelCameraSearchDie2**, **$michaelCameraSearchDie3**. Интеллект: **+1**. Ситуационный бонус: **+1**. Итог: **$michaelCameraSearchTotal**.\n\n<<if $michaelCameraSearchTotal >= 11>>\n<<set $michaelFoundExternalCamera = true>>\n[[Осмотреть найденную камеру->U16 — Майкл заметил внешнюю камеру]]\n<<else>>\n<<set $michaelFoundExternalCamera = false>>\n[[Продолжить после неудачного поиска->U17 — Команда не заметила камеру]]\n<<endif>>\n\n","U16 — Майкл заметил внешнюю камеру":"Проверка успешна. Майкл замечает внешнюю камеру примерно в пятнадцати метрах над землёй на недостроенном здании. Она пишет локально и перезаписывает данные восьмичасовым циклом.\n\n<<if $gameHour < 11>>\nЗапись нападения около 03:00 ещё находится в буфере, но вот-вот исчезнет.\n<<else>>\nК началу периода 11:00–12:00 запись нападения около 03:00 уже стёрта более новой циклической записью.\n<<endif>>\n\nЧтобы получить улику, Майклу нужно подняться по стене и снять камеру.\n\n[[Попытаться снять камеру->C06 — Подъём Майкла к камере]]\n\n","U17 — Команда не заметила камеру":"Проверка провалена. Майкл не замечает внешнюю камеру, и команда продолжает расследование без этой улики. Подъём не происходит, Шорох не получает её жёсткий диск.\n\n[[Завершить осмотр участка->C19 — Линия Тео после осмотра участка]]\n\n","C06 — Подъём Майкла к камере":"<<if $michaelCameraClimbTotal is null>>\n<<set $michaelCameraClimbDie1 = random(1, 6)>>\n<<set $michaelCameraClimbDie2 = random(1, 6)>>\n<<set $michaelCameraClimbDie3 = random(1, 6)>>\n<<set $michaelCameraClimbTotal = $michaelCameraClimbDie1 + $michaelCameraClimbDie2 + $michaelCameraClimbDie3 + 3>>\n<<endif>>\n\nВ транскрипте подъём выполняется Атлетикой Майкла, поэтому его «ловкость» в этой сцене моделируется обычной проверкой `3d6 + Атлетика 3` против 11. Бонус за разминку и штраф за спешку не применяются.\n\nКубики: **$michaelCameraClimbDie1**, **$michaelCameraClimbDie2**, **$michaelCameraClimbDie3**. Атлетика: **+3**. Итог: **$michaelCameraClimbTotal**.\n\n<<if $michaelCameraClimbTotal >= 11>>\n<<set $michaelRetrievedExternalCamera = true>>\n[[Снять и передать камеру Шороху->U18 — Внешняя камера получена]]\n<<else>>\n<<set $michaelRetrievedExternalCamera = false>>\n[[Продолжить после падения камеры->U19 — Внешняя камера разбилась]]\n<<endif>>\n\n","U18 — Внешняя камера получена":"<<set $shorokhHasExternalCameraDrive = true>>\n<<if $gameHour < 11>>\n<<set $externalCameraHasAttackRecording = true>>\n<<else>>\n<<set $externalCameraHasAttackRecording = false>>\n<<endif>>\nПроверка успешна. Майкл забирается к камере, аккуратно снимает её и спускается. Камеру он передаёт Шороху: только тот может проверить содержимое жёсткого диска.\n\n[[Передать камеру Шороху->U41 — Шорох проверяет внешнюю камеру]]\n\n","U41 — Шорох проверяет внешнюю камеру":"Шорох подключает жёсткий диск камеры к оборудованию в полицейской машине.\n\n<<if $externalCameraHasAttackRecording>>\nНа записи видны два чёрных внедорожника и вооружённые люди, которые врываются в участок, а затем возвращаются к машинам и уезжают.\n\n<<if visited(\"S07 — 09:00–09:30. Конвой Lazarus\") > 0>>\nСреди нападавших команда узнаёт людей из остановленного конвоя Lazarus.\n<<else>>\nПоскольку конвой был проигнорирован, команда не может установить личности и принадлежность нападавших.\n<<endif>>\n<<else>>\nШорох просматривает доступный буфер и подтверждает: команда опоздала. Восьмичасовой цикл уже перезаписал нападение, поэтому на диске остались только более свежие и бесполезные для расследования кадры.\n<<endif>>\n\n[[Завершить осмотр участка->C19 — Линия Тео после осмотра участка]]\n\n","U19 — Внешняя камера разбилась":"Майкл добирается до камеры и снимает её с крепления, но на спуске роняет. Камера разбивается, жёсткий диск уничтожен, и Шорох не получает запись нападения.\n\n[[Завершить осмотр участка->C19 — Линия Тео после осмотра участка]]\n\n","C19 — Линия Тео после осмотра участка":"<<if $theoStayedWithTeamAtPrecinct>>\n[[Продолжить вместе с командой->S17A — Тео осталась в участке]]\n<<else>>\n[[Перейти к параллельной линии Тео->S15 — Тео проникает в PsyOps]]\n<<endif>>\n\n","S15 — Тео проникает в PsyOps":"<<set $theoVisitedPsyOps = true>>\nПока остальные исследуют девятый участок, Тео добирается до закрытого офиса PsyOps. На вызов никто не отвечает. Она вскрывает ножом окно и проникает в серверную часть помещения.\n\nВнутри работают холодильники и серверы; по коридорам ходит ремонтный дроид, а три дорогих боевых дроида находятся в режиме ожидания.\n\n[[Дальше →->S16 — Вирус в сети PsyOps]]\n\n","S16 — Вирус в сети PsyOps":"<<set $shorokhKnowsTheoVisitedPsyOps = true>>\nТео подключается к локальной сети. Через камеры она видит двух нетраннеров с выжженными вирусом мозгами и своего друга без сознания на кровати. В его руке — использованный стимулятор; он жив, но находится в тяжёлом отключении.\n\nВирус замечает Тео и начинает искать путь к её нейроимпланту. Она вовремя разрывает соединение и звонит Шороху. Из-за просьбы помочь с роботами Шорох узнаёт, что Тео тайно находится в офисе PsyOps. Остальным членам команды она поездку не раскрывает.\n\n[[Проверить, вспомнит ли Шорох сведения о роботах->C01 — Проверка памяти Шороха]]\n\n","C01 — Проверка памяти Шороха":"<<set $shorokhRobotDie1 = random(1, 6)>>\n<<set $shorokhRobotDie2 = random(1, 6)>>\n<<set $shorokhRobotDie3 = random(1, 6)>>\n<<set $shorokhRobotCheckTotal = $shorokhRobotDie1 + $shorokhRobotDie2 + $shorokhRobotDie3 + 3>>\n\nВо время телефонного разговора Шорох пытается вспомнить техническую информацию о боевых роботах. Он проходит обычную проверку Интеллекта: `3d6 + 3` против сложности 11.\n\nКубики: **$shorokhRobotDie1**, **$shorokhRobotDie2**, **$shorokhRobotDie3**. Интеллект Шороха: **+3**. Итог: **$shorokhRobotCheckTotal**.\n\n<<if $shorokhRobotCheckTotal >= 11>>\n<<set $shorokhRememberedRobotInfo = true>>\nПроверка успешна. Шорох вспоминает данные, которые помогут обезвредить роботов.\n\n[[Передать информацию Тео->U06 — Тео обезвредила роботов]]\n<<else>>\n<<set $shorokhRememberedRobotInfo = false>>\nПроверка провалена. Шорох ничего не вспоминает о роботах. Тео не может их обезвредить и возвращается к команде, чтобы позднее убедить Шороха вместе посетить офис PsyOps.\n\n<<if $selectedCharacter is \"theo\">>\n[[Вернуться к команде после параллельного осмотра->C20 — Скрытые проверки группы в участке]]\n<<else>>\n[[Вернуться к сыгранной линии->S17 — Воссоединение перед концом часа]]\n<<endif>>\n<<endif>>\n\n","U06 — Тео обезвредила роботов":"<<set $shorokhRememberedRobotInfo = true>>\n<<set $theoNeutralizedPsyOpsRobots = true>>\n<<set $sweetJohnnyRescued = true>>\nШорох вспоминает информацию о том, как обезвредить роботов, и передаёт её Тео. Тео обезвреживает роботов и спасает Сладкого Джони.\n\nНа этом самостоятельная ветка Тео в офисе PsyOps заканчивается. Совместное возвращение туда вместе с Шорохом больше не требуется.\n\n<<if $selectedCharacter is \"theo\">>\n[[Вернуться к команде после параллельного осмотра->C20 — Скрытые проверки группы в участке]]\n<<else>>\n[[Вернуться к команде->S17 — Воссоединение перед концом часа]]\n<<endif>>\n\n","C20 — Скрытые проверки группы в участке":"<<silently>>\n<<if not $precinctResolvedOffscreen>>\n<<set $precinctResolvedOffscreen = true>>\n\n/* Рил скрыто проверяет наличие живых. */\n<<if $reLPrecinctLifeScanTotal is null>>\n<<set $reLPrecinctLifeScanDie1 = random(1, 6)>>\n<<set $reLPrecinctLifeScanDie2 = random(1, 6)>>\n<<set $reLPrecinctLifeScanDie3 = random(1, 6)>>\n<<set $reLPrecinctLifeScanTotal = $reLPrecinctLifeScanDie1 + $reLPrecinctLifeScanDie2 + $reLPrecinctLifeScanDie3 + 2>>\n<<if $reLPrecinctLifeScanTotal >= 11>>\n<<set $reLPrecinctLifeScanSucceeded = true>>\n<<else>>\n<<set $reLPrecinctLifeScanSucceeded = false>>\n<<endif>>\n<<endif>>\n\n/* NPC-Шорох скрыто решает, подключаться ли к системе наблюдения. */\n<<if $shorokhSurveillanceConnectionRoll is null>>\n<<set $shorokhSurveillanceConnectionRoll = random(1, 100)>>\n<<endif>>\n<<if $shorokhSurveillanceConnectionRoll <= 80>>\n<<set $shorokhTriedPrecinctSurveillanceConnection = true>>\n<<if $shorokhPrecinctSurveillanceCheckTotal is null>>\n<<set $shorokhPrecinctSurveillanceDie1 = random(1, 6)>>\n<<set $shorokhPrecinctSurveillanceDie2 = random(1, 6)>>\n<<set $shorokhPrecinctSurveillanceDie3 = random(1, 6)>>\n<<set $shorokhPrecinctSurveillanceCheckTotal = $shorokhPrecinctSurveillanceDie1 + $shorokhPrecinctSurveillanceDie2 + $shorokhPrecinctSurveillanceDie3 + 3>>\n<<if $shorokhPrecinctSurveillanceCheckTotal >= 11>>\n<<set $shorokhPrecinctSurveillanceCheckSucceeded = true>>\n<<else>>\n<<set $shorokhPrecinctSurveillanceCheckSucceeded = false>>\n<<set $shorokhLeftArmHp = Math.max(0, $shorokhLeftArmHp - 1)>>\n<<endif>>\n<<endif>>\n<<else>>\n<<set $shorokhTriedPrecinctSurveillanceConnection = false>>\n<<endif>>\n\n/* Шорох скрыто проверяет мину; после взрыва NPC-Майкл решает вопрос первой помощи. */\n<<if $shorokhAvoidedPrecinctMine is null>>\n<<set $shorokhPrecinctMineDie1 = random(1, 6)>>\n<<set $shorokhPrecinctMineDie2 = random(1, 6)>>\n<<set $shorokhPrecinctMineDie3 = random(1, 6)>>\n<<set $shorokhPrecinctMineCheckTotal = $shorokhPrecinctMineDie1 + $shorokhPrecinctMineDie2 + $shorokhPrecinctMineDie3 + 1>>\n<<if $shorokhPrecinctMineCheckTotal >= 11>>\n<<set $shorokhAvoidedPrecinctMine = true>>\n<<set $precinctMineDefused = true>>\n<<else>>\n<<set $shorokhAvoidedPrecinctMine = false>>\n<<set $shorokhRightLegHp = Math.max(0, $shorokhRightLegHp - 2)>>\n<<set $shorokhLeftLegHp = Math.max(0, $shorokhLeftLegHp - 2)>>\n<<if $michaelFirstAidRoll is null>>\n<<set $michaelFirstAidRoll = random(1, 100)>>\n<<endif>>\n<<if $michaelFirstAidRoll <= 80>>\n<<set $michaelProvidedFirstAid = true>>\n<<set $shorokhRightLegHp = Math.min(6, $shorokhRightLegHp + 1)>>\n<<set $shorokhLeftLegHp = Math.min(6, $shorokhLeftLegHp + 1)>>\n<<else>>\n<<set $michaelProvidedFirstAid = false>>\n<<endif>>\n<<endif>>\n<<endif>>\n\n/* Проверки сцены убийства отсутствуют: Майкл и Тахи являются NPC. */\n\n/* Шорох скрыто оценивает повреждённый диск внутренних камер. */\n<<if $shorokhPrecinctDriveCheckTotal is null>>\n<<set $shorokhPrecinctDriveDie1 = random(1, 6)>>\n<<set $shorokhPrecinctDriveDie2 = random(1, 6)>>\n<<set $shorokhPrecinctDriveDie3 = random(1, 6)>>\n<<set $shorokhPrecinctDriveCheckTotal = $shorokhPrecinctDriveDie1 + $shorokhPrecinctDriveDie2 + $shorokhPrecinctDriveDie3 + 3>>\n<<if $shorokhPrecinctDriveCheckTotal >= 11>>\n<<set $shorokhRecognizedRepairablePrecinctDrive = true>>\n<<set $hasDamagedPrecinctDrive = true>>\n<<else>>\n<<set $shorokhRecognizedRepairablePrecinctDrive = false>>\n<<set $hasDamagedPrecinctDrive = false>>\n<<endif>>\n<<endif>>\n\n/* Майкл скрыто ищет и пытается снять внешнюю камеру. */\n<<if $michaelCameraSearchTotal is null>>\n<<set $michaelCameraSearchDie1 = random(1, 6)>>\n<<set $michaelCameraSearchDie2 = random(1, 6)>>\n<<set $michaelCameraSearchDie3 = random(1, 6)>>\n<<set $michaelCameraSearchTotal = $michaelCameraSearchDie1 + $michaelCameraSearchDie2 + $michaelCameraSearchDie3 + 1 + 1>>\n<<if $michaelCameraSearchTotal >= 11>>\n<<set $michaelFoundExternalCamera = true>>\n<<set $michaelCameraClimbDie1 = random(1, 6)>>\n<<set $michaelCameraClimbDie2 = random(1, 6)>>\n<<set $michaelCameraClimbDie3 = random(1, 6)>>\n<<set $michaelCameraClimbTotal = $michaelCameraClimbDie1 + $michaelCameraClimbDie2 + $michaelCameraClimbDie3 + 3>>\n<<if $michaelCameraClimbTotal >= 11>>\n<<set $michaelRetrievedExternalCamera = true>>\n<<set $shorokhHasExternalCameraDrive = true>>\n<<if $gameHour < 11>>\n<<set $externalCameraHasAttackRecording = true>>\n<<else>>\n<<set $externalCameraHasAttackRecording = false>>\n<<endif>>\n<<else>>\n<<set $michaelRetrievedExternalCamera = false>>\n<<set $shorokhHasExternalCameraDrive = false>>\n<<set $externalCameraHasAttackRecording = false>>\n<<endif>>\n<<else>>\n<<set $michaelFoundExternalCamera = false>>\n<<set $shorokhHasExternalCameraDrive = false>>\n<<set $externalCameraHasAttackRecording = false>>\n<<endif>>\n<<endif>>\n<<endif>>\n<</silently>>\n\nПока Тео находилась в PsyOps, остальные члены команды самостоятельно исследовали девятый участок. Их решения и проверки разрешены скрыто; кубики и результаты станут известны игроку только через заметные последствия и рассказы при воссоединении.\n\n[[Вернуться к команде->S17 — Воссоединение перед концом часа]]\n\n","S17 — Воссоединение перед концом часа":"Ближе к концу выбранного часового периода Тео возвращается к девятому участку. Команда воссоединяется перед зданием, у полицейских машин, и по очереди рассказывает новости.\n\nМайклу, Тахи и Рил Тео не рассказывает ни о поездке в PsyOps, ни о том, где находилась. Только Шорох знает правду, потому что Тео была вынуждена обратиться к нему за помощью с роботами.\n\n//Факт поездки Тео в PsyOps переопределяет стандартную вероятность 80/20: он всегда скрыт от Майкла, Тахи и Рил. При прохождении за Тео игрок уже знает о поездке, поскольку самостоятельно прошёл её сцену, но в кат-сцене воссоединения не получает варианта рассказать о ней. При прохождении за Шороха игрок узнаёт тайну из звонка Тео, но также не получает варианта её выдать: Шорох сохраняет тайну и как NPC, и как выбранный персонаж. `$teamKnowsTheoVisitedPsyOps` остаётся false, а `$shorokhKnowsTheoVisitedPsyOps` уже установлен в true.//\n\n<<if $precinctResolvedOffscreen>>\nОставшиеся герои по очереди рассказывают Тео всё публичное, что произошло в участке. Каждый продолжает живой разговор с того места, на котором остановился предыдущий; проверки раскрытия 80/20 здесь не выполняются.\n\n[[Выслушать Рил->R01 — Рил рассказывает о первом сканировании]]\n<<else>>\n[[Продолжить после уже известного осмотра->S17B — После сводки участка]]\n<<endif>>\n\n","R01 — Рил рассказывает о первом сканировании":"<<if $reLPrecinctLifeScanSucceeded>>\nРил начинает первой:\n\n— Ещё снаружи я просканировала здание. Живых внутри не обнаружила.\n<<else>>\nРил начинает первой:\n\n— Я пыталась просканировать здание ещё снаружи, но стены и помехи заглушили сигнал. Внутри были неподвижные силуэты, а живы они или нет, я тогда понять не смогла.\n<<endif>>\n\n[[Передать слово Шороху->R02 — Шорох рассказывает о входе в участок]]\n\n","R02 — Шорох рассказывает о входе в участок":"<<if $shorokhTriedPrecinctSurveillanceConnection>>\nШорох подхватывает рассказ:\n\n— Я подключился к внутренней системе наблюдения. Она повреждена и ничего не отдала.\n<<if $shorokhPrecinctSurveillanceCheckSucceeded is false>>\n\nОн показывает повреждённую левую киберруку:\n\n— Ещё и сдачи дала. Осталось **$shorokhLeftArmHp из 3 HP**.\n<<endif>>\n<<else>>\nШорох подхватывает рассказ:\n\n— К наружной системе наблюдения я подключаться не стал. Выглядела она так, будто только и ждала, кто первым сунется.\n<<endif>>\n\n<<if $shorokhAvoidedPrecinctMine>>\n— А у входа стояла мина. Луч я заметил, переступил, потом ловушку обезвредили.\n\n[[Выслушать Тахи->R04 — Тахи рассказывает о погибших]]\n<<else>>\n— А у входа стояла мина. Луч я заметил уже ногами. Она взорвалась и зацепила обе.\n\n[[Выслушать Майкла->R03 — Майкл рассказывает о первой помощи]]\n<<endif>>\n\n","R03 — Майкл рассказывает о первой помощи":"<<if $michaelProvidedFirstAid>>\nМайкл кивает на ноги Шороха:\n\n— После взрыва я его подлатал. Правая нога — **$shorokhRightLegHp из 6 HP**, левая — **$shorokhLeftLegHp из 6 HP**.\n<<else>>\nМайкл кивает на ноги Шороха:\n\n— Мина зацепила обе ноги. Помочь на месте я ему не стал. Правая — **$shorokhRightLegHp из 6 HP**, левая — **$shorokhLeftLegHp из 6 HP**.\n<<endif>>\n\n[[Передать слово Тахи->R04 — Тахи рассказывает о погибших]]\n\n","R04 — Тахи рассказывает о погибших":"Тахи говорит следом:\n\n— Внутри нашли полицейских, пленных Потрошителей и шефа Аарона Буча. Все мертвы. Стреляли точно, делали контрольные — работали опытные солдаты. Арсенал не тронули, внутренние камеры уничтожили.\n\nМайкл и Тахи не пытались получить дополнительные сведения с места убийства: такие проверки выполняются только активным персонажем.\n\n[[Уточнить время смерти у Рил->R05 — Рил сообщает время смерти]]\n\n","R05 — Рил сообщает время смерти":"Рил добавляет:\n\n— По состоянию тел, погибли они примерно в три часа ночи.\n\n[[Выслушать Шороха об оборудовании->R06 — Шорох рассказывает о внутреннем диске]]\n\n","R06 — Шорох рассказывает о внутреннем диске":"<<if $hasDamagedPrecinctDrive>>\nШорох достаёт повреждённый диск:\n\n— Это осталось от внутренних камер. Сейчас он не читается, но, кажется, его можно восстановить. Я забрал.\n<<else>>\nШорох разводит руками:\n\n— От внутренних камер нашёлся повреждённый диск. Я посмотрел — восстанавливать там нечего. Оставил внутри.\n<<endif>>\n\n[[Выслушать Майкла о внешней камере->R07 — Майкл рассказывает о внешней камере]]\n\n","R07 — Майкл рассказывает о внешней камере":"<<if $shorokhHasExternalCameraDrive>>\nМайкл показывает на камеру в руках Шороха:\n\n— На соседней недостройке я заметил внешнюю камеру. Забрался, снял и передал Шороху. Что на диске, расскажет он.\n\n[[Выслушать Шороха о записи->R08 — Шорох рассказывает о записи внешней камеры]]\n<<elseif $michaelFoundExternalCamera>>\nМайкл заканчивает свою часть рассказа:\n\n— На соседней недостройке я заметил внешнюю камеру. Снять смог, а на спуске уронил. Камера и диск разбились.\n\nВсе перечисленные сведения теперь известны Тео и остаются публичным знанием команды.\n\n[[Завершить общую сводку->S17B — После сводки участка]]\n<<else>>\nМайкл заканчивает свою часть рассказа:\n\n— Я осмотрел здания вокруг, но внешнюю камеру так и не заметил.\n<<if $teamKnowsConvoyData>>\n\nКоманда по-прежнему знает о планах «Крион», укреплениях и организованных беспорядках, но без записи не может связать конвой с нападением на участок.\n<<endif>>\n\nВсе перечисленные сведения теперь известны Тео и остаются публичным знанием команды.\n\n[[Завершить общую сводку->S17B — После сводки участка]]\n<<endif>>\n\n","R08 — Шорох рассказывает о записи внешней камеры":"<<if $externalCameraHasAttackRecording and visited(\"S07 — 09:00–09:30. Конвой Lazarus\") > 0 and $teamKnowsConvoyData>>\nШорох отвечает, не отрываясь от диска:\n\n— Здесь два чёрных внедорожника. Из них выходят те же люди, которых мы видели в конвое Lazarus. Они врываются в участок, возвращаются к машинам и уезжают. Вместе с данными про «Крион», укрепления и беспорядки это уже не похоже на совпадение.\n<<elseif $externalCameraHasAttackRecording and visited(\"S07 — 09:00–09:30. Конвой Lazarus\") > 0>>\nШорох отвечает, не отрываясь от диска:\n\n— Здесь два чёрных внедорожника. Из них выходят те же люди, которых мы видели в конвое Lazarus. Они врываются в участок, возвращаются к машинам и уезжают. Но кому они служат, из этой записи не понять.\n<<elseif $externalCameraHasAttackRecording>>\nШорох отвечает, не отрываясь от диска:\n\n— Здесь два чёрных внедорожника и вооружённые люди. Они врываются в участок, возвращаются к машинам и уезжают. Лиц и принадлежности мы не знаем.\n<<else>>\nШорох отключает диск:\n\n— Мы опоздали. Буфер восьмичасовой, и к одиннадцати запись нападения уже затёрло новым циклом. Здесь остались только свежие кадры — для расследования бесполезные.\n<<endif>>\n\nВсе перечисленные сведения теперь известны Тео и остаются публичным знанием команды.\n\n[[Завершить общую сводку->S17B — После сводки участка]]\n\n","S17B — После сводки участка":"<<if $theoNeutralizedPsyOpsRobots>>\nНаедине Тео сообщает Шороху, что роботы обезврежены, а Сладкий Джони спасён. Совместное возвращение Тео и Шороха в PsyOps больше не требуется и соответствующая ветка закрывается.\n<<else>>\nНаедине Тео признаётся Шороху, что Сладкий Джони жив, но роботов обезвредить не удалось. Возможность вернуться в PsyOps вместе с Шорохом остаётся открытой.\n<<endif>>\n\nШорох напоминает о назначенной на 11:00 встрече с дилером Тощим Сэмми у метро Blue Skyport.\n\n[[Выбрать дальнейший маршрут->S18 — Выбор после посещения участка]]\n\n","S17A — Тео осталась в участке":"Тео остаётся с командой на протяжении всего осмотра девятого участка. Собственных действий внутри она не предпринимает и пассивно наблюдает за работой остальных.\n\nОна не посещала офис PsyOps, не связывалась с Шорохом по поводу боевых роботов и пока не знает, что произошло со Сладким Джони.\n\nШорох напоминает о назначенной на 11:00 встрече с дилером Тощим Сэмми у метро Blue Skyport.\n\n[[Выбрать дальнейший маршрут->S18 — Выбор после посещения участка]]\n\n","S18 — Выбор после посещения участка":"После исследования участка команда заново решает, куда ехать дальше. Она может разделиться, как в сыгранной сессии, либо сохранить общий маршрут.\n\nВ сыгранной линии группа разделилась:\n\n<<if $theoVisitedPsyOps>>\n* Шорох и Тео едут на мотоцикле к метро, после чего намерены вернуться в PsyOps.\n<<else>>\n* Шорох и Тео едут к метро, после чего намерены впервые вместе посетить PsyOps и найти Сладкого Джони.\n<<endif>>\n* Майкл, Тахи и Рил везут улики в сторону одиннадцатого участка.\n\nУличная битва возникает только на маршруте тех персонажей, которые решают вернуться в одиннадцатый участок к шефу.\n\n<<if $gameHour == 10>>\n<<if not $theoNeutralizedPsyOpsRobots>>\n[[Разделиться как в сыгранной сессии: Шорох и Тео — к метро, остальные — к шефу->S19 — Автобус и киберпсих][$gameHour = 11]]\n<<else>>\n[[Выбрать новый маршрут без возвращения в PsyOps->U09 — Маршрут после спасения Сладкого Джони][$gameHour = 11]]\n<<endif>>\n<<else>>\n[[Всей командой вернуться к шефу->U04 — Вся команда встречает киберпсиха][$gameHour = 10]]\n<<if not $theoNeutralizedPsyOpsRobots>>\n[[Разделиться: Майкл, Тахи и Рил — к Большому Бо; Шорох и Тео — в PsyOps->U03 — Большой Бо и PsyOps][$gameHour = 10]]\n<<endif>>\n[[Поехать всей командой к Большому Бо->U01 — Команда встретила Большого Бо][$gameHour = 10]]\n<<endif>>\n\n","U03 — Большой Бо и PsyOps":"<<set $visitedBigBo = true>>\n<<set $knowsStadiumPlan = true>>\nМайкл, Тахи и Рил едут к Большому Бо и узнают от него, что в 12:00 на стадионе Detroit Rangers что-то готовится.\n\n<<if $theoVisitedPsyOps>>\nПараллельно Шорох и Тео возвращаются в PsyOps, чтобы обезвредить оставшихся активными роботов и спасти Сладкого Джони.\n<<else>>\nПараллельно Шорох и Тео впервые вместе направляются в PsyOps, чтобы найти Сладкого Джони и разобраться с угрозой на месте.\n<<endif>>\n\n//Если Тео уже была в PsyOps, ветка доступна после провала проверки памяти Шороха. Если она осталась в участке, это первое посещение офиса. Подробные сцены обеих групп будут добавлены позднее.//\n\n[[Продолжить к точке синхронизации->SYNC01 — Сбор команды перед стадионом]]\n\n","U04 — Вся команда встречает киберпсиха":"В 10:00 вся команда едет обратно в одиннадцатый участок к шефу. На этом маршруте она встречает киберпсиха, и начинается уличная битва.\n\n//Заглушка: состав участников отличается от сыгранной битвы, поэтому её подробный ход и последствия будут добавлены отдельно.//\n\n[[После уличной битвы->U05 — После битвы всей команды]]\n\n","U09 — Маршрут после спасения Сладкого Джони":"Тео уже обезвредила роботов и спасла Сладкого Джони, поэтому совместное возвращение Тео и Шороха в PsyOps закрыто. Команда выбирает один из двух маршрутов на период 11:00–12:00.\n\n[[Всей командой поехать к шефу полиции->U10 — Вся команда едет к шефу после спасения Джони]]\n[[Разделиться: Тео и Шорох — к Тощему Сэмми; Майкл, Тахи и Рил — к шефу->S19 — Автобус и киберпсих]]\n\n","U10 — Вся команда едет к шефу после спасения Джони":"В 11:00 вся команда направляется в одиннадцатый участок к шефу полиции. Поскольку выбран маршрут к шефу, все пять героев встречают киберпсиха.\n\nКоманда в любом случае побеждает киберпсиха. Состав участников влияет на детали боя, но не меняет его место в общем сюжете. Один из героев получает тяжёлые ранения; кто именно и при каких обстоятельствах, будет определено вместе с механикой боя.\n\n[[После победы ехать в больницу->U05 — После битвы всей команды]]\n\n","S19 — Автобус и киберпсих":"Перед машиной Майкла, Тахи и Рил на дорогу падает пассажирский автобус. Из-за угла выбегают люди, крича о киберпсихе. Огромный противник с клинками богомола запрыгивает на автобус и убивает захваченную женщину.\n\nНесмотря на приказ не вступать в бой, троица принимает бой, защищая уцелевших.\n\n[[Дальше →->S20 — Бой с киберпсихом]]\n\n","S20 — Бой с киберпсихом":"Рил занимает высоту и первым снайперским выстрелом тяжело повреждает голову киберпсиха. Майкл ведёт огонь с улицы. Тахи пытается сбить противника патрульной машиной.\n\nКиберпсих прыгает на капот и клинками тяжело калечит обе руки Тахи; правая оказывается отсечена, левую ещё можно спасти. Машина врезается в здание и прижимает врага, после чего Рил добивает его выстрелом в голову. Тахи теряет сознание от кровопотери.\n\n[[Дальше →->S21 — Звонок Большого Бо]]\n\n","U05 — После битвы всей команды":"<<set $fullTeamCyberpsychoBattle = true>>\nВ уличной битве участвовала вся команда и победила киберпсиха. Один из героев тяжело ранен, и команда готовится везти пострадавшего в больницу на полицейском автомобиле.\n\n//Заглушка: личность раненого, характер травм и конкретные действия в бою будут определены при обсуждении боевой механики. Состав участников битвы не изменяет дальнейший общий сюжет.//\n\nШорох может отделиться от команды и самостоятельно доехать на метро до назначенной встречи с Тощим Сэмми; тогда остальные четыре героя повезут раненого в больницу. Если Шорох останется с ними, встреча будет пропущена.\n\n[[Отделиться и ехать к Тощему Сэмми на метро->S22 — Последнее предупреждение Сэмми]]\n[[Остаться с командой и ехать в больницу->SYNC01 — Сбор команды перед стадионом]]\n\n","U11 — После Сэмми и больницы":"Шорох получает от Тощего Сэмми сведения о встрече на стадионе и сразу оказывается у стадиона. Время и способ перемещения не описываются; возможная поездка на метро остаётся за кадром.\n\nПараллельно остальные четыре героя находятся в больнице и спасают раненого товарища. Как и в других обязательных переходах к стадиону, дорога не расходует внутриигровое время и не требует отдельной сцены.\n\n[[Дождаться остальных у стадиона->SYNC01 — Сбор команды перед стадионом]]\n\n","S21 — Звонок Большого Бо":"На КПК Тахи звонит Большой Бо; отвечает Рил. Узнав, что Тахи не приехал до 11:00 и тяжело ранен, Бо сообщает: прежняя просьба уже не может быть выполнена. Он оставляет Тахи последний шанс — в 17:00 прийти одному в порт и уйти вместе с людьми Бо, если хочет выжить.\n\nВ беспамятстве Тахи видит духов племени. На вопрос, кого он считает своими, Тахи выбирает не кровных соплеменников Бо, а людей честного шефа Дойла и своих нынешних товарищей.\n\n[[Параллельно: встреча у метро →->S22 — Последнее предупреждение Сэмми]]\n\n","S22 — Последнее предупреждение Сэмми":"<<set $knowsStadiumPlan = true>>\nШорох встречает Тощего Сэмми на станции Blue Skyport. Сэмми отдаёт последнюю бесплатную партию нейроблокаторов, прекращает поставки и уезжает из района.\n\nОн сообщает новую улику: в 12:00 Потрошители встретятся с тяжело вооружёнными людьми на парковке стадиона Detroit Rangers, и там будет много трупов. В вагон вслед за Сэмми входят двое крепких преследователей; дальнейшая его судьба неизвестна.\n\n<<if $fullTeamCyberpsychoBattle>>\nПосле встречи Шорох сразу направляется на стадион. Время и способ перемещения остаются за кадром. Параллельно команда спасает раненого героя в больнице.\n\n[[Продолжить параллельные маршруты->U11 — После Сэмми и больницы]]\n<<elseif $theoNeutralizedPsyOpsRobots>>\nПоскольку роботы уже обезврежены, а Сладкий Джони спасён, Тео и Шорох не возвращаются в PsyOps и сразу едут на стадион. Параллельно Майкл и Рил везут раненого Тахи к тайному риперу Arasaka.\n\n[[Параллельно: операция Тахи->S26 — Операция Тахи]]\n<<else>>\n[[Дальше →->S23 — Связь после боя]]\n<<endif>>\n\n","S23 — Связь после боя":"Две группы связываются. Шорох сообщает об угрозе у стадиона в полдень. Дойл подтверждает, что помощи не будет: девятый участок уничтожен, десятый отказывается участвовать, а Джонатан Лайт связан с новым окружным прокурором.\n\nДойл ждёт команду к 14:00 и разрешает до этого собирать сведения на свой страх и риск. Шорох и Тео решают сперва спасти Сладкого Джони; Рил направляет Майкла с раненым Тахи к тайному риперу Arasaka.\n\n[[Дальше →->S24 — Офис PsyOps]]\n\n","S24 — Офис PsyOps":"Тео приводит Шороха в PsyOps. Через домофон Шорох проникает во внутреннюю сеть, останавливает ремонтного и трёх боевых дроидов, затем перепрограммирует их считать себя командиром. Он получает отряд из трёх боевых машин и одного инженерного дроида, но каждый удалённый приказ создаёт риск повреждения его импланта и киберпсихоза.\n\nШорох также обезвреживает вирус, уже убивший двух нетраннеров.\n\n[[Дальше →->S25 — Сладкий Джони приходит в себя]]\n\n","S25 — Сладкий Джони приходит в себя":"Тео находит Сладкого Джони живым после передозировки стимулятором и приводит его в чувство. Осознав, что произошло в PsyOps и что его товарищи мертвы, он садится и сползает по стене.\n\nТео и Шорох остаются в помещении с выжившим и перепрограммированными дроидами. До встречи у стадиона остаётся мало времени.\n\n[[Параллельно: рипер Arasaka →->S26 — Операция Тахи]]\n\n","S26 — Операция Тахи":"Майкл и Рил доставляют Тахи к тайному риперу Arasaka. Майкл с трудом терпит полностью имплантированного техника, а тот подтверждает: мозг Тахи не повреждён, левую руку можно зафиксировать, правую нужно заменить.\n\nВ полубреду Тахи сам соглашается на экспериментальный протез-огнемёт. Arasaka покрывает одну операцию, рипер вводит Тахи наркоз и начинает установку.\n\n<<if $theoNeutralizedPsyOpsRobots>>\n[[Собрать всю команду на стадионе->SYNC01 — Сбор команды перед стадионом]]\n<<else>>\n[[Дальше →->S27 — Конец первой сессии]]\n<<endif>>\n\n","S27 — Конец первой сессии":"Сессия заканчивается до 12:00 двумя одновременными клиффхэнгерами:\n\n* Шорох и Тео находятся в PsyOps со спасённым Сладким Джони и четырьмя захваченными дроидами.\n* Майкл и Рил ждут завершения операции, во время которой Тахи устанавливают правую руку-огнемёт и спасают левую руку.\n\nСледующий обязательный узел — встреча Потрошителей с вооружённой группой в 12:00 на парковке стадиона Detroit Rangers. Также существует слух о событии, похожем на теракт, около 18:00.\n\nГлавный конфликт, содержание сцены на стадионе и дальнейшие события должны проясниться после второй офлайн-сессии.\n\n[[Собрать команду перед стадионом->SYNC01 — Сбор команды перед стадионом]]\n\n","SYNC01 — Сбор команды перед стадионом":"<<set $teamReunitedForStadium = true>>\n\nК полудню Шорох, Майкл, Тахи, Тео и Рил снова собираются вместе. Все утренние ветки сходятся в одну обязательную точку.\n\n//До прибытия на стадион Тео и Шорох всегда скрывают существование её импланта от Майкла и остальных. Пользовательского выбора и случайной проверки для раскрытия этого факта в утреннем графе нет; `$teamKnowsTheoHasImplant` остаётся false. Возможное раскрытие после стадиона относится к будущей части сюжета.//\n\nМежду завершившимися сценами и следующим действием проигрывается промежуточная кат-сцена воссоединения. Герои, действовавшие отдельно от выбранного персонажа, рассказывают ему и остальной команде, что произошло в их параллельных ветках. Только после этого рассказа соответствующие сведения становятся доступны с перспективы игрока.\n\nВыбранный персонаж также рассказывает о собственной ветке. Для каждого известного ему факта игрок решает, раскрывать ли его команде. Для фактов, известных NPC, решение о раскрытии принимается случайно. Скрытые сведения остаются личным знанием персонажа и могут изменить будущие развилки.\n\nСюжетно-критические сведения являются исключением: они сообщаются команде автоматически и не могут быть скрыты ни игроком, ни NPC. Информация о событии на стадионе в 12:00 относится к этой категории.\n\n//Механическая заглушка: для каждого необязательного факта NPC базовый шанс раскрытия равен 80%, шанс сокрытия — 20%. Конкретные варианты, сохранённые результаты проверок и командные флаги будут добавляться вместе с фактами соответствующих веток.//\n\n<<if $knowsStadiumPlan>>\n<<if $visitedBigBo and visited(\"S22 — Последнее предупреждение Сэмми\") > 0>>\nО готовящемся событии на стадионе команду предупредили и Большой Бо, и Тощий Сэмми.\n<<elseif $visitedBigBo>>\nИсточником сведений о стадионе стал Большой Бо.\n<<else>>\nИсточником сведений о встрече Потрошителей с вооружённой группой стал Тощий Сэмми.\n<<endif>>\n[[В 12:00 прибыть на стадион полным составом->F01 — 12:00. Стадион Detroit Rangers]]\n<<else>>\nУтренние квесты закончены, но команда не встретилась ни с Большим Бо, ни с Тощим Сэмми и пока ничего не знает о стадионе.\n\n[[Ответить на срочный звонок шефа->C02 — 12:00. Звонок шефа]]\n<<endif>>\n\n","C02 — 12:00. Звонок шефа":"<<set $gameHour = 12>>\n<<set $knowsStadiumPlan = true>>\nРовно в 12:00 шеф звонит собравшейся команде и сообщает, что на стадионе Detroit Rangers что-то готовится. Он приказывает срочно выдвигаться туда.\n\nЭто сюжетное допущение не расходует внутриигровое время на дорогу: сразу после звонка действие переносится на стадион.\n\n[[Немедленно оказаться на стадионе->F01 — 12:00. Стадион Detroit Rangers]]\n\n","F01 — 12:00. Стадион Detroit Rangers":"<<set $gameHour = 12>>\n<<if $knowsStadiumPlan and $teamReunitedForStadium>>\n<<if visited(\"C02 — 12:00. Звонок шефа\") > 0>>\nСразу после звонка шефа ровно в 12:00 действие переносится на стадион Detroit Rangers. Дорога не расходует внутриигровое время, и вся команда оказывается здесь полным составом.\n<<else>>\nК 12:00 вся команда полным составом прибывает на стадион Detroit Rangers.\n<<endif>>\nРезультаты утренних сцен, полученные сведения и сохранённые переменные изменят доступные здесь проверки.\n<<else>>\n//Ошибка структуры: переход к стадиону возможен только после получения сведений и воссоединения всей команды.//\n<<endif>>\n\n//Обязательная финальная точка текущего графа. Содержание сцены на стадионе и продолжение сюжета будут добавлены после второй офлайн-сессии.//\n\n"};
+    const storageKey = "the-game-session-1-v1";
+    const characterNames = {
+      shorokh: "Шорох",
+      michael: "Майкл",
+      tahi: "Тахи",
+      theo: "Тео",
+      reL: "Рил"
+    };
+    let state = {};
+    let visits = {};
+    let currentPassage = "Start";
+    let history = [];
+
+    const scene = document.querySelector("#scene");
+    const backButton = document.querySelector("#back");
+    const restartButton = document.querySelector("#restart");
+
+    function random(min, max) {
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    function visited(name) {
+      return visits[name] || 0;
+    }
+
+    function toJavaScript(expression) {
+      return expression
+        .replace(/\$([A-Za-z_][A-Za-z0-9_]*)/g, "state.$1")
+        .replace(/\bis not\b/g, "!==")
+        .replace(/\bis\b/g, "===")
+        .replace(/\band\b/g, "&&")
+        .replace(/\bor\b/g, "||")
+        .replace(/\bnot\b/g, "!");
+    }
+
+    function evaluate(expression) {
+      try {
+        return Boolean(Function("state", "visited", "random", "return (" + toJavaScript(expression) + ");")(state, visited, random));
+      } catch (error) {
+        console.error("Не удалось вычислить условие:", expression, error);
+        return false;
+      }
+    }
+
+    function execute(statement) {
+      try {
+        Function("state", "visited", "random", toJavaScript(statement) + ";")(state, visited, random);
+      } catch (error) {
+        console.error("Не удалось изменить состояние:", statement, error);
+      }
+    }
+
+    function isActive(stack) {
+      return stack.every(frame => frame.active);
+    }
+
+    function parseLink(token) {
+      const inner = token.slice(2, -2);
+      const arrow = inner.indexOf("->");
+      if (arrow < 0) return null;
+      const label = inner.slice(0, arrow).trim().replace(/\s*[→›]\s*$/, "");
+      let destination = inner.slice(arrow + 2).trim();
+      let setter = "";
+      const setterStart = destination.lastIndexOf("][");
+      if (setterStart >= 0) {
+        setter = destination.slice(setterStart + 2).trim();
+        destination = destination.slice(0, setterStart).trim();
+      }
+      return { label, destination, setter };
+    }
+
+    function processPassage(name, executeMacros = true) {
+      const source = passages[name];
+      if (source == null) return { body: "Не найдена следующая сцена.", choices: [] };
+
+      const conditionStack = [];
+      let silentDepth = 0;
+      let body = "";
+      const choices = [];
+      const tokens = source.split(/(<<[\s\S]*?>>|\[\[[\s\S]*?\]\])/g);
+
+      for (const token of tokens) {
+        if (!token) continue;
+        if (token.startsWith("<<") && token.endsWith(">>")) {
+          const macro = token.slice(2, -2).trim();
+          if (macro.startsWith("if ")) {
+            const parentActive = isActive(conditionStack);
+            const result = parentActive && evaluate(macro.slice(3));
+            conditionStack.push({ parentActive, active: result, matched: result });
+          } else if (macro.startsWith("elseif ")) {
+            const frame = conditionStack.at(-1);
+            if (frame) {
+              const result = frame.parentActive && !frame.matched && evaluate(macro.slice(7));
+              frame.active = result;
+              frame.matched ||= result;
+            }
+          } else if (macro === "else") {
+            const frame = conditionStack.at(-1);
+            if (frame) {
+              frame.active = frame.parentActive && !frame.matched;
+              frame.matched = true;
+            }
+          } else if (macro === "endif") {
+            conditionStack.pop();
+          } else if (macro === "silently") {
+            silentDepth += 1;
+          } else if (macro === "/silently") {
+            silentDepth = Math.max(0, silentDepth - 1);
+          } else if (macro.startsWith("set ") && isActive(conditionStack) && executeMacros) {
+            execute(macro.slice(4));
+          }
+          continue;
+        }
+
+        if (!isActive(conditionStack)) continue;
+        if (token.startsWith("[[") && token.endsWith("]]")) {
+          if (!silentDepth) {
+            const link = parseLink(token);
+            if (link) choices.push(link);
+          }
+        } else if (!silentDepth) {
+          body += token;
+        }
+      }
+
+      return { body, choices };
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function interpolate(text) {
+      return text.replace(/\$([A-Za-z_][A-Za-z0-9_]*)/g, (_, key) => {
+        const value = state[key];
+        if (value === true) return "да";
+        if (value === false) return "нет";
+        if (value == null) return "—";
+        return String(value);
+      });
+    }
+
+    function inlineMarkup(text) {
+      return escapeHtml(interpolate(text))
+        .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+        .replace(/''(.+?)''/g, "<strong>$1</strong>")
+        .replace(/\x60(.+?)\x60/g, "<code>$1</code>");
+    }
+
+    function proseToHtml(raw) {
+      const cleaned = raw
+        .split(/\r?\n/)
+        .filter(line => !/^\s*\/\/.*\/\/\s*$/.test(line))
+        .join("\n")
+        .trim();
+      if (!cleaned) return "";
+
+      const blocks = cleaned.split(/\n\s*\n/);
+      return blocks.map(block => {
+        const lines = block.split("\n").map(line => line.trim()).filter(Boolean);
+        if (lines.every(line => /^\*\s+/.test(line))) {
+          return "<ul>" + lines.map(line => "<li>" + inlineMarkup(line.replace(/^\*\s+/, "")) + "</li>").join("") + "</ul>";
+        }
+        return "<p>" + inlineMarkup(lines.join(" ")) + "</p>";
+      }).join("");
+    }
+
+    function cleanTitle(name) {
+      if (name === "Start") return "Первая смена";
+      return name.replace(/^(?:[SCURF]\d+[A-Z]?|SYNC\d+)\s*—\s*/, "");
+    }
+
+    function contextLabel(name) {
+      if (name === "Start") return "Даллас · вторая половина XXI века";
+      const time = cleanTitle(name).match(/\b(\d{2}:\d{2}(?:[–—-]\d{2}:\d{2})?)\b/);
+      const character = characterNames[state.selectedCharacter];
+      return [time?.[1], character].filter(Boolean).join(" · ") || "Blue Skyport · первая сессия";
+    }
+
+    function choiceLabel(choice, choiceCount, name) {
+      if (choiceCount === 1) return "Дальше";
+      if (name === "Start") {
+        const forms = {
+          "Шорох": "Выбрать Шороха",
+          "Майкл Маклейн": "Выбрать Майкла",
+          "Тахи": "Выбрать Тахи",
+          "Тео Маклейн": "Выбрать Тео",
+          "Рил": "Выбрать Рил"
+        };
+        return forms[choice.label] || choice.label;
+      }
+      return choice.label;
+    }
+
+    function snapshot() {
+      return {
+        passage: currentPassage,
+        state: structuredClone(state),
+        visits: structuredClone(visits)
+      };
+    }
+
+    function save() {
+      localStorage.setItem(storageKey, JSON.stringify({
+        currentPassage,
+        state,
+        visits,
+        history
+      }));
+    }
+
+    function render(name, executeMacros = true, countVisit = true) {
+      currentPassage = name;
+      if (countVisit) visits[name] = (visits[name] || 0) + 1;
+      const result = processPassage(name, executeMacros);
+      const choicesClass = result.choices.length > 1 ? "choices multiple" : "choices";
+      const ending = result.choices.length === 0
+        ? '<div class="ending">Продолжение истории появится в следующей сборке.</div>'
+        : "";
+
+      scene.classList.remove("scene");
+      void scene.offsetWidth;
+      scene.classList.add("scene");
+      scene.innerHTML =
+        '<p class="eyebrow">' + escapeHtml(contextLabel(name)) + '</p>' +
+        '<h1>' + escapeHtml(cleanTitle(name)) + '</h1>' +
+        '<div class="copy">' + proseToHtml(result.body) + '</div>' +
+        '<div class="' + choicesClass + '" aria-label="Варианты действия">' +
+          result.choices.map((choice, index) =>
+            '<button class="choice" type="button" data-choice="' + index + '">' +
+              '<span>' + escapeHtml(choiceLabel(choice, result.choices.length, name)) + '</span>' +
+            '</button>'
+          ).join("") +
+        '</div>' + ending;
+
+      scene.querySelectorAll("[data-choice]").forEach(button => {
+        button.addEventListener("click", () => {
+          const choice = result.choices[Number(button.dataset.choice)];
+          history.push(snapshot());
+          if (choice.setter) execute(choice.setter);
+          render(choice.destination, true, true);
+          window.scrollTo({ top: 0, behavior: "smooth" });
+          save();
+        });
+      });
+
+      backButton.disabled = history.length === 0;
+      document.title = cleanTitle(name) + " — The Game";
+    }
+
+    function startFresh() {
+      state = {};
+      visits = {};
+      history = [];
+      processPassage("StoryInit", true);
+      render("Start", true, true);
+      save();
+    }
+
+    backButton.addEventListener("click", () => {
+      const previous = history.pop();
+      if (!previous) return;
+      state = previous.state;
+      visits = previous.visits;
+      render(previous.passage, false, false);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      save();
+    });
+
+    restartButton.addEventListener("click", () => {
+      if (currentPassage === "Start" || confirm("Начать историю заново? Текущий прогресс будет сброшен.")) {
+        startFresh();
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+    });
+
+    try {
+      const saved = JSON.parse(localStorage.getItem(storageKey));
+      if (saved?.currentPassage && passages[saved.currentPassage]) {
+        currentPassage = saved.currentPassage;
+        state = saved.state || {};
+        visits = saved.visits || {};
+        history = saved.history || [];
+        render(currentPassage, false, false);
+      } else {
+        startFresh();
+      }
+    } catch {
+      startFresh();
+    }
+  </script>
+</body>
+</html>
